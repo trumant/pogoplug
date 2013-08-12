@@ -12,4 +12,5 @@ guard :test do
   watch('test/test_helper.rb')  { "test" }
 end
 
-notification :gntp, :sticky => true
+notification :terminal_title
+notification :gntp

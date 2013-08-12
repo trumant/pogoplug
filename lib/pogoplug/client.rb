@@ -38,6 +38,18 @@ module PogoPlug
       devices
     end
 
+    def services(token, device_id=nil, shared=false)
+      params = { valtoken: token, shared: shared }
+      params[:deviceid] = device_id unless device_id.nil?
+
+      response = self.class.get('/listServices', query: params)
+      services = []
+      response.parsed_response['services'].each do |s|
+        services << Service.new(s['name'], s['serviceid'])
+      end
+      services
+    end
+
     private
 
     def raise_errors(response)

@@ -36,11 +36,23 @@ class ClientTest < Test::Unit::TestCase
       end
 
       should "provide a list of PogoPlug devices belonging to the user" do
-        devices = @client.devices(@client.login(@username, @password))
+        devices = @client.devices(@token)
         assert_not_nil(devices, "Devices are missing")
         first_device = devices.first
         assert_kind_of(PogoPlug::Device, first_device, "Device model instances should be returned")
         assert_false(first_device.services.empty?, "Device services should not be empty")
+      end
+    end
+
+    context "#services" do
+      setup do
+        @token = @client.login(@username, @password)
+      end
+
+      should "provide a list of PogoPlug services available to the user" do
+        services = @client.services(@token)
+        assert_not_nil(services, "Services are missing")
+        assert_kind_of(Enumerable, services)
       end
     end
   end
