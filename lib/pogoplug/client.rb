@@ -27,7 +27,15 @@ module PogoPlug
     # Retrieve a list of devices that are registered with the PogoPlug account
     def devices(token)
       response = self.class.get('/listDevices', query: { valtoken: token })
-      response.parsed_response['devices']
+      devices = []
+      response.parsed_response['devices'].each do |d|
+        device = Device.new(d['name'], d['deviceid'])
+        d['services'].each do |s|
+          device.services << Service.new(s['name'], s['serviceid'])
+        end
+        devices << device
+      end
+      devices
     end
 
     private

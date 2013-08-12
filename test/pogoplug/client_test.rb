@@ -38,6 +38,9 @@ class ClientTest < Test::Unit::TestCase
       should "provide a list of PogoPlug devices belonging to the user" do
         devices = @client.devices(@client.login(@username, @password))
         assert_not_nil(devices, "Devices are missing")
+        first_device = devices.first
+        assert_kind_of(PogoPlug::Device, first_device, "Device model instances should be returned")
+        assert_false(first_device.services.empty?, "Device services should not be empty")
       end
     end
   end
