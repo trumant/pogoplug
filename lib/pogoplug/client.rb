@@ -50,6 +50,12 @@ module PogoPlug
       services
     end
 
+    def files(token, device_id, service_id)
+      params = { valtoken: token, deviceid: device_id, serviceid: service_id }
+      response = self.class.get('/listFiles', query: params)
+      FileListing.from_json(response.parsed_response)
+    end
+
     private
 
     def raise_errors(response)
