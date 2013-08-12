@@ -29,11 +29,7 @@ module PogoPlug
       response = self.class.get('/listDevices', query: { valtoken: token })
       devices = []
       response.parsed_response['devices'].each do |d|
-        device = Device.new(d['name'], d['deviceid'])
-        d['services'].each do |s|
-          device.services << Service.new(s['name'], s['serviceid'])
-        end
-        devices << device
+        devices << Device.from_json(d)
       end
       devices
     end
@@ -45,7 +41,7 @@ module PogoPlug
       response = self.class.get('/listServices', query: params)
       services = []
       response.parsed_response['services'].each do |s|
-        services << Service.new(s['name'], s['serviceid'])
+        services << Service.from_json(s)
       end
       services
     end

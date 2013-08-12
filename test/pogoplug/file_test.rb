@@ -36,6 +36,43 @@ module PogoPlug
         directory = File.new("My folder", "some id value", File::Type::DIRECTORY)
         assert_true(directory.directory?, "File of type File::Type::DIRECTORY should know that it is a directory")
       end
+
+      should "be able to build instances from JSON" do
+        json = %q{
+          {
+            "fileid": "WJ0I39hPZfSIgLYSes5u0w",
+            "type": "0",
+            "name": "bar.txt",
+            "parentid": "0",
+            "mimetype": "text/plain",
+            "size": "0",
+            "ctime": "1376082434000",
+            "mtime": "1376082434000",
+            "origtime": "1376082434000",
+            "xcstamp": "",
+            "tnstamp": "",
+            "mdstamp": "",
+            "streamtype": "full",
+            "thumbnail": "",
+            "preview": "",
+            "stream": "",
+            "livestream": "",
+            "flvstream": "",
+            "properties": {
+              "origin": ""
+            },
+            "metaver": "0",
+            "filename": "bar.txt",
+            "mediatype": "text"
+          }
+        }
+        file = File.from_json(JSON.parse(json))
+        assert_false(file.directory?)
+        assert_equal(file.mimetype, "text/plain")
+        assert_equal(file.size, 0)
+        assert_equal(file.id, "WJ0I39hPZfSIgLYSes5u0w")
+        assert_equal(file.name, "bar.txt")
+      end
     end
   end
 end

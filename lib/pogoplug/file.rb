@@ -21,7 +21,9 @@ module PogoPlug
     end
 
     def self.from_json(json)
-      File.new(json['name'], json['fileid'], json['type'])
+      file = File.new(json['name'], json['fileid'], json['type'])
+      file.mimetype = json['mimetype']
+      file
     end
   end
 end
