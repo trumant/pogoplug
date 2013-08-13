@@ -9,12 +9,7 @@ module PogoPlug
       SYMBOLIC_LINK = 3
     end
 
-    def initialize(name, id, type)
-      @name = name
-      @id = id
-      @type = type
-      @size = 0
-    end
+    include HashInitializer
 
     def directory?
       @type == File::Type::DIRECTORY
@@ -24,11 +19,19 @@ module PogoPlug
       @type == File::Type::FILE
     end
 
+    def size
+      @size || 0
+    end
+
     def self.from_json(json)
-      file = File.new(json['name'], json['fileid'], json['type'].to_i)
-      file.mimetype = json['mimetype']
-      file.parent_id = json['parentid']
-      file
+      File.new(
+        name: json['name'],
+        id: json['fileid'],
+        type: json['type'].to_i,
+        mimetype: json['mimetype'],
+        parent_id: json['parentid'],
+        size: json['size'].to_i
+      )
     end
   end
 end

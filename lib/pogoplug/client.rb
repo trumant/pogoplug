@@ -55,8 +55,12 @@ module PogoPlug
     end
 
     def create_directory(token, device_id, service_id, directory_name, parent_id=nil)
-      params = { valtoken: token, deviceid: device_id, serviceid: service_id, filename: directory_name, type: File::Type::DIRECTORY }
-      params[:parentid] = parent_id unless parent_id.nil?
+      create_file(token, device_id, service_id, File.new(name: directory_name, parent_id: parent_id, type: File::Type::DIRECTORY))
+    end
+
+    def create_file(token, device_id, service_id, file)
+      params = { valtoken: token, deviceid: device_id, serviceid: service_id, filename: file.name, type: file.type }
+      params[:parentid] = file.parent_id unless file.parent_id.nil?
       response = self.class.get('/createFile', query: params)
       File.from_json(response.parsed_response['file'])
     end

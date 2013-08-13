@@ -1,14 +1,11 @@
 module PogoPlug
   class Service
+    include HashInitializer
+
     attr_accessor :name, :id
 
-    def initialize(name, id)
-      @name = name
-      @id = id
-    end
-
     def self.from_json(json)
-      Service.new(json['name'], json['serviceid'])
+      Service.new(name: json['name'], id: json['serviceid'])
     end
   end
 end

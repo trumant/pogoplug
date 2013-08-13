@@ -7,7 +7,7 @@ module PogoPlug
       setup do
         @name = "Pogoplug Cloud"
         @id = "XCLDGAAAHE5B5NKDKMUXJ52F9J"
-        @service = PogoPlug::Service.new(@name, @id)
+        @service = PogoPlug::Service.new(name: @name, id: @id)
       end
 
       should "provide an ID" do

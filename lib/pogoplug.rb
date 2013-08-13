@@ -1,6 +1,7 @@
 require 'rubygems'
 
 require 'pogoplug/version'
+require 'pogoplug/hash_initializer'
 require 'pogoplug/client'
 require 'pogoplug/device'
 require 'pogoplug/file'

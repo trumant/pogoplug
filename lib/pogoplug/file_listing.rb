@@ -1,17 +1,19 @@
 module PogoPlug
   class FileListing
+    include HashInitializer
+
     attr_accessor :size, :offset, :total_count, :files
 
-    def initialize(size, offset)
-      @size = size
-      @offset = offset
-      @total_count = 0
-      @files = []
+    def files
+      @files ||= Array.new
     end
 
     def self.from_json(json)
-      listing = FileListing.new(json['count'].to_i, json['pageoffset'].to_i)
-      listing.total_count = json['totalcount'].to_i
+      listing = FileListing.new(
+        size: json['count'].to_i,
+        offset: json['pageoffset'].to_i,
+        total_count: json['totalcount'].to_i
+      )
       json['files'].each do |f|
         listing.files << File.from_json(f)
       end

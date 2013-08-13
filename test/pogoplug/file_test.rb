@@ -7,7 +7,7 @@ module PogoPlug
         @id = "WJ0I39hPZfSIgLYSes5u0w"
         @type = File::Type::FILE
         @mimetype = "test/plain"
-        @file = File.new(@name, @id, @type)
+        @file = File.new(name: @name, id: @id, type: @type)
       end
 
       should "provide a name" do
@@ -33,7 +33,7 @@ module PogoPlug
 
       should "know if its a directory" do
         assert_false(@file.directory?, "File of type File::Type::FILE should not think it is a directory")
-        directory = File.new("My folder", "some id value", File::Type::DIRECTORY)
+        directory = File.new(name: "My folder", id: "some id value", type: File::Type::DIRECTORY)
         assert_true(directory.directory?, "File of type File::Type::DIRECTORY should know that it is a directory")
       end
 

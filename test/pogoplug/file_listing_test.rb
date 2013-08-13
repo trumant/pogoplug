@@ -6,11 +6,11 @@ module PogoPlug
       setup do
         @size = 2
         @offset = 0
-        @file_listing = FileListing.new(@size, @offset)
+        @file_listing = FileListing.new(size: @size, offset: @offset, total_count: @size)
       end
 
       should "provide the number of files in the listing" do
-        assert_equal(@file_listing.size, @size)
+        assert_equal(@size, @file_listing.size)
       end
 
       context "from_json" do
@@ -129,12 +129,12 @@ module PogoPlug
             }
           }
           listing = FileListing.from_json(JSON::parse(json))
-          assert_equal(listing.size, 4, "Size does not match")
-          assert_equal(listing.offset, 0, "Offset does not match")
-          assert_equal(listing.total_count, 4, "Total count does not match")
+          assert_equal(4, listing.size, "Size does not match")
+          assert_equal(0, listing.offset, "Offset does not match")
+          assert_equal(4, listing.total_count, "Total count does not match")
           assert_not_nil(listing.files, "Files are missing")
           assert_kind_of(Enumerable, listing.files)
-          assert_equal(listing.files.size, 4, "Expected 4 files")
+          assert_equal(4, listing.files.size, "Expected 4 files")
         end
       end
     end

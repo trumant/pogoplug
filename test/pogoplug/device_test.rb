@@ -6,21 +6,21 @@ module PogoPlug
       setup do
         @name = "Pogoplug Cloud"
         @id = "XCLDGAAAHE5B5NKDKMUXJ52F9J"
-        @device = PogoPlug::Device.new(@name, @id)
+        @device = Device.new(name: @name, id: @id)
       end
 
       should "provide a name" do
-        assert_equal(@device.name, @name)
+        assert_equal(@name, @device.name)
       end
 
       should "provide an ID" do
-        assert_equal(@device.id, @id)
+        assert_equal(@id, @device.id)
       end
 
       should "allow services to be added" do
-        service = PogoPlug::Service.new("some name", "some id")
+        service = Service.new(name: "some name", id: "some id")
         @device.services << service
-        assert_equal(@device.services.first, service)
+        assert_equal(service, @device.services.first)
       end
 
       should "provide a collection of services" do
@@ -72,9 +72,9 @@ module PogoPlug
           }
         }
         device = Device.from_json(JSON.parse(json))
-        assert_equal(device.name, "Pogoplug Cloud")
-        assert_equal(device.id, "XCLDGAAAHE5B5NKDKMUXJ52F9J")
-        assert_equal(device.services.size, 1, "Expected 1 service")
+        assert_equal("Pogoplug Cloud", device.name)
+        assert_equal("XCLDGAAAHE5B5NKDKMUXJ52F9J", device.id)
+        assert_equal(1, device.services.size, "Expected 1 service")
       end
     end
   end

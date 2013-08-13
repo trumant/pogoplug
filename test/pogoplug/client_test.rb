@@ -103,7 +103,12 @@ module PogoPlug
           @file_name = "My test file #{rand(1000).to_i}"
         end
 
-        should "create a file"
+        should "create a file" do
+          parent_directory = @client.files(@token, @device.id, @device.services.first.id).files.select { |file| file.directory? }.first
+          file = File.new(name: @file_name, type: File::Type::FILE, parent_id: parent_directory.id)
+          created_file = @client.create_file(@token, @device.id, @device.services.first.id, file)
+          assert_not_nil(created_file, "File should have been created")
+        end
       end
     end
   end
