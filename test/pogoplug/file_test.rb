@@ -68,10 +68,12 @@ module PogoPlug
         }
         file = File.from_json(JSON.parse(json))
         assert_false(file.directory?)
+        assert_true(file.file?)
         assert_equal(file.mimetype, "text/plain")
         assert_equal(file.size, 0)
         assert_equal(file.id, "WJ0I39hPZfSIgLYSes5u0w")
         assert_equal(file.name, "bar.txt")
+        assert_equal(file.parent_id, "0")
       end
     end
   end

@@ -69,6 +69,42 @@ module PogoPlug
           #assert_false(files.empty?, "Files are not expected to be empty")
         end
       end
+
+      context "#create_directory" do
+        setup do
+          @token = @client.login(@username, @password)
+          @device = @client.devices(@token).first
+          @directory_name = "My Test Directory #{rand(1000).to_i}"
+          @child_directory_name = "My Test Child Directory #{rand(1000).to_i}"
+        end
+
+        should "create a directory under the root" do
+          directory = @client.create_directory(@token, @device.id, @device.services.first.id, @directory_name)
+          assert_not_nil(directory, "Directory should have been created")
+          assert_equal(directory.name, @directory_name, "Directory should have the correct name")
+          assert_equal(directory.parent_id, "0", "Directory should be at the root")
+          assert_true(directory.directory?, "Directory should be a directory")
+        end
+
+        should "create a directory under the specified parent" do
+          parent_directory = @client.files(@token, @device.id, @device.services.first.id).files.select { |file| file.directory? }.first
+          directory = @client.create_directory(@token, @device.id, @device.services.first.id, @child_directory_name, parent_directory.id)
+          assert_not_nil(directory, "Directory should have been created")
+          assert_equal(directory.name, @child_directory_name, "Directory should have the correct name")
+          assert_equal(directory.parent_id, parent_directory.id, "Directory should be under the correct parent")
+          assert_true(directory.directory?, "Directory should be a directory")
+        end
+      end
+
+      context "#create_file" do
+        setup do
+          @token = @client.login(@username, @password)
+          @device = @client.devices(@token).first
+          @file_name = "My test file #{rand(1000).to_i}"
+        end
+
+        should "create a file"
+      end
     end
   end
 end

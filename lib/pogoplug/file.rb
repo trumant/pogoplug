@@ -1,6 +1,6 @@
 module PogoPlug
   class File
-    attr_accessor :name, :id, :type, :size, :mimetype
+    attr_accessor :name, :id, :type, :size, :mimetype, :parent_id
 
     module Type
       FILE = 0
@@ -20,9 +20,14 @@ module PogoPlug
       @type == File::Type::DIRECTORY
     end
 
+    def file?
+      @type == File::Type::FILE
+    end
+
     def self.from_json(json)
-      file = File.new(json['name'], json['fileid'], json['type'])
+      file = File.new(json['name'], json['fileid'], json['type'].to_i)
       file.mimetype = json['mimetype']
+      file.parent_id = json['parentid']
       file
     end
   end

@@ -34,6 +34,7 @@ module PogoPlug
       devices
     end
 
+    # Retrieve a list of services
     def services(token, device_id=nil, shared=false)
       params = { valtoken: token, shared: shared }
       params[:deviceid] = device_id unless device_id.nil?
@@ -46,10 +47,18 @@ module PogoPlug
       services
     end
 
+    # Retrieve a list of files for a device and service
     def files(token, device_id, service_id)
       params = { valtoken: token, deviceid: device_id, serviceid: service_id }
       response = self.class.get('/listFiles', query: params)
       FileListing.from_json(response.parsed_response)
+    end
+
+    def create_directory(token, device_id, service_id, directory_name, parent_id=nil)
+      params = { valtoken: token, deviceid: device_id, serviceid: service_id, filename: directory_name, type: File::Type::DIRECTORY }
+      params[:parentid] = parent_id unless parent_id.nil?
+      response = self.class.get('/createFile', query: params)
+      File.from_json(response.parsed_response['file'])
     end
 
     private
