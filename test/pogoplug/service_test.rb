@@ -37,8 +37,9 @@ module PogoPlug
           }
         }
         service = Service.from_json(JSON.parse(json))
-        assert_equal(service.id, "XCLDGAAAHE5B5NKDKMUXJ52F9J")
-        assert_equal(service.name, "Pogoplug Cloud")
+        assert_equal("XCLDGAAAHE5B5NKDKMUXJ52F9J", service.id)
+        assert_equal("Pogoplug Cloud", service.name)
+        assert_equal("https://cl0c0.pogoplug.com/svc/api/", service.api_url)
       end
     end
   end

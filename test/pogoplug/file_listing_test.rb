@@ -135,6 +135,7 @@ module PogoPlug
           assert_not_nil(listing.files, "Files are missing")
           assert_kind_of(Enumerable, listing.files)
           assert_equal(4, listing.files.size, "Expected 4 files")
+          assert_false(listing.empty?)
         end
       end
     end

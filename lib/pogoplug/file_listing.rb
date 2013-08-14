@@ -8,6 +8,10 @@ module PogoPlug
       @files ||= Array.new
     end
 
+    def empty?
+      @files.empty?
+    end
+
     def self.from_json(json)
       listing = FileListing.new(
         size: json['count'].to_i,

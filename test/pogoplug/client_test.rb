@@ -66,7 +66,15 @@ module PogoPlug
           files = @client.files(@token, @device.id, @device.services.first.id)
           assert_not_nil(files, "Files are missing")
           assert_kind_of(PogoPlug::FileListing, files)
-          #assert_false(files.empty?, "Files are not expected to be empty")
+          assert_false(files.empty?, "Files are not expected to be empty")
+        end
+
+        should "provide a means of paging through the files in the listing" do
+          file_listing = @client.files(@token, @device.id, @device.services.first.id)
+          assert_true(file_listing.total_count > file_listing.size, "Expecting just the first page of files")
+          second_page = @client.files(@token, @device.id, @device.services.first.id, file_listing.offset + 1)
+          assert_equal(file_listing.offset + 1, second_page.offset, "Expecting the second page listing to have the correct offset")
+          assert_false(second_page.empty?, "Expecting the second page of files to have some files")
         end
       end
 
@@ -79,7 +87,7 @@ module PogoPlug
         end
 
         should "create a directory under the root" do
-          directory = @client.create_directory(@token, @device.id, @device.services.first.id, @directory_name)
+          directory = @client.create_directory(@token, @device.id, @device.services.first, @directory_name)
           assert_not_nil(directory, "Directory should have been created")
           assert_equal(directory.name, @directory_name, "Directory should have the correct name")
           assert_equal(directory.parent_id, "0", "Directory should be at the root")
@@ -88,7 +96,7 @@ module PogoPlug
 
         should "create a directory under the specified parent" do
           parent_directory = @client.files(@token, @device.id, @device.services.first.id).files.select { |file| file.directory? }.first
-          directory = @client.create_directory(@token, @device.id, @device.services.first.id, @child_directory_name, parent_directory.id)
+          directory = @client.create_directory(@token, @device.id, @device.services.first, @child_directory_name, parent_directory.id)
           assert_not_nil(directory, "Directory should have been created")
           assert_equal(directory.name, @child_directory_name, "Directory should have the correct name")
           assert_equal(directory.parent_id, parent_directory.id, "Directory should be under the correct parent")
@@ -101,13 +109,24 @@ module PogoPlug
           @token = @client.login(@username, @password)
           @device = @client.devices(@token).first
           @file_name = "My test file #{rand(1000).to_i}"
+          @parent_directory = @client.files(@token, @device.id, @device.services.first.id).files.select { |file| file.directory? }.first
+          @file_to_create = File.new(name: @file_name, type: File::Type::FILE, parent_id: @parent_directory.id)
         end
 
-        should "create a file" do
-          parent_directory = @client.files(@token, @device.id, @device.services.first.id).files.select { |file| file.directory? }.first
-          file = File.new(name: @file_name, type: File::Type::FILE, parent_id: parent_directory.id)
-          created_file = @client.create_file(@token, @device.id, @device.services.first.id, file)
+        should "create a file handle" do
+          created_file = @client.create_file(@token, @device.id, @device.services.first, @file_to_create)
           assert_not_nil(created_file, "File should have been created")
+          assert_equal(@file_name, created_file.name)
+          assert_equal(@file_to_create.type, created_file.type)
+          assert_equal(@file_to_create.parent_id, created_file.parent_id)
+          assert_not_nil(created_file.id)
+        end
+
+        should_eventually "create a file handle and attach the bits" do
+          test_file = ::File.new(::File.expand_path('../../test_file.txt', __FILE__), 'rb')
+          created_file = @client.create_file(@token, @device.id, @device.services.first, @file_to_create, test_file)
+          assert_not_nil(created_file)
+          # assert_equal(test_file.size, created_file.size)
         end
       end
     end

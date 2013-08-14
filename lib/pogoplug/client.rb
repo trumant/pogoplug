@@ -4,7 +4,7 @@ require 'json'
 module PogoPlug
   class Client
     include HTTParty
-    debug_output $stdout
+    # debug_output $stdout
     base_uri 'https://service.pogoplug.com/svc/api/json'
     format :json
 
@@ -48,8 +48,8 @@ module PogoPlug
     end
 
     # Retrieve a list of files for a device and service
-    def files(token, device_id, service_id)
-      params = { valtoken: token, deviceid: device_id, serviceid: service_id }
+    def files(token, device_id, service_id, offset=0)
+      params = { valtoken: token, deviceid: device_id, serviceid: service_id, pageoffset: offset }
       response = self.class.get('/listFiles', query: params)
       FileListing.from_json(response.parsed_response)
     end
@@ -58,11 +58,25 @@ module PogoPlug
       create_file(token, device_id, service_id, File.new(name: directory_name, parent_id: parent_id, type: File::Type::DIRECTORY))
     end
 
-    def create_file(token, device_id, service_id, file)
-      params = { valtoken: token, deviceid: device_id, serviceid: service_id, filename: file.name, type: file.type }
+    def create_file(token, device_id, service, file, io=nil)
+      params = { valtoken: token, deviceid: device_id, serviceid: service.id, filename: file.name, type: file.type }
       params[:parentid] = file.parent_id unless file.parent_id.nil?
       response = self.class.get('/createFile', query: params)
-      File.from_json(response.parsed_response['file'])
+      file_handle = File.from_json(response.parsed_response['file'])
+      if io
+        uri = URI.parse("#{service.api_url}files/#{token}/#{device_id}/#{service.id}/#{file_handle.id}/#{::File.basename(io.path)}")
+        # puts uri.inspect
+        req = Net::HTTP::Put.new(uri.path)
+        req['Content-Length'] = io.size
+        req['Content-Type'] = file.mimetype
+        req.body_stream = io
+        # puts req.to_hash.inspect
+        put_response = Net::HTTP.new(uri.host, uri.port).request(req)
+        puts put_response.inspect
+        puts put_response.body
+      end
+      # puts file_handle.inspect
+      file_handle
     end
 
     private
