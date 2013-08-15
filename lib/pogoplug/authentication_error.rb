@@ -1,4 +1,4 @@
 module PogoPlug
-  class AuthenticationError < RuntimeError
+  class AuthenticationError < StandardError
   end
 end

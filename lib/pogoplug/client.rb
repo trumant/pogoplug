@@ -7,6 +7,7 @@ module PogoPlug
     # debug_output $stdout
     base_uri 'https://service.pogoplug.com/svc/api/json'
     format :json
+    attr_accessor :token
 
     # Retrieve the current version information of the service
     def version
@@ -21,12 +22,14 @@ module PogoPlug
     def login(email, password)
       response = self.class.get('/loginUser', query: { email: email, password: password })
       raise_errors(response)
-      response.parsed_response["valtoken"]
+      @token = response.parsed_response["valtoken"]
+      return self
     end
 
     # Retrieve a list of devices that are registered with the PogoPlug account
-    def devices(token)
-      response = self.class.get('/listDevices', query: { valtoken: token })
+    def devices
+      validate_token
+      response = self.class.get('/listDevices', query: { valtoken: @token })
       devices = []
       response.parsed_response['devices'].each do |d|
         devices << Device.from_json(d)
@@ -35,8 +38,9 @@ module PogoPlug
     end
 
     # Retrieve a list of services
-    def services(token, device_id=nil, shared=false)
-      params = { valtoken: token, shared: shared }
+    def services(device_id=nil, shared=false)
+      validate_token
+      params = { valtoken: @token, shared: shared }
       params[:deviceid] = device_id unless device_id.nil?
 
       response = self.class.get('/listServices', query: params)
@@ -48,43 +52,54 @@ module PogoPlug
     end
 
     # Retrieve a list of files for a device and service
-    def files(token, device_id, service_id, offset=0)
-      params = { valtoken: token, deviceid: device_id, serviceid: service_id, pageoffset: offset }
+    def files(device_id, service_id, offset=0)
+      params = { valtoken: @token, deviceid: device_id, serviceid: service_id, pageoffset: offset }
       response = self.class.get('/listFiles', query: params)
       FileListing.from_json(response.parsed_response)
     end
 
-    def create_directory(token, device_id, service_id, directory_name, parent_id=nil)
-      create_file(token, device_id, service_id, File.new(name: directory_name, parent_id: parent_id, type: File::Type::DIRECTORY))
+    def create_directory(device_id, service_id, directory_name, parent_id=nil)
+      create_file(device_id, service_id, File.new(name: directory_name, parent_id: parent_id, type: File::Type::DIRECTORY))
     end
 
-    def create_file(token, device_id, service, file, io=nil)
-      params = { valtoken: token, deviceid: device_id, serviceid: service.id, filename: file.name, type: file.type }
+    # Creates a file handle and optionally attach an io.
+    # The provided file argument is expected to contain at minimum
+    # a name, type and parent_id. If it has a mimetype that will be assumed to
+    # match the mimetype of the io.
+    def create_file(device_id, service, file, io=nil)
+      params = { valtoken: @token, deviceid: device_id, serviceid: service.id, filename: file.name, type: file.type }
       params[:parentid] = file.parent_id unless file.parent_id.nil?
       response = self.class.get('/createFile', query: params)
       file_handle = File.from_json(response.parsed_response['file'])
       if io
-        uri = URI.parse("#{service.api_url}files/#{token}/#{device_id}/#{service.id}/#{file_handle.id}/#{::File.basename(io.path)}")
-        # puts uri.inspect
-        req = Net::HTTP::Put.new(uri.path)
-        req['Content-Length'] = io.size
-        req['Content-Type'] = file.mimetype
-        req.body_stream = io
-        # puts req.to_hash.inspect
-        put_response = Net::HTTP.new(uri.host, uri.port).request(req)
-        puts put_response.inspect
-        puts put_response.body
+        send_file(token, device_id, service, file_handle, io)
+        file_handle.size = io.size
       end
-      # puts file_handle.inspect
       file_handle
     end
 
     private
 
+    def validate_token
+      if @token.nil?
+        raise AuthenticationError('Authentication token is missing. Call login first.')
+      end
+    end
+
     def raise_errors(response)
       if response.parsed_response['HB-EXCEPTION'] && response.parsed_response['HB-EXCEPTION']['ecode'] == 606
         raise AuthenticationError
       end
+    end
+
+    def send_file(token, device_id, service, file_handle, io)
+      parent = file_handle.id || 0
+      uri = URI.parse("#{service.api_url}files/#{token}/#{device_id}/#{service.id}/#{parent}/#{file_handle.name}")
+      req = Net::HTTP::Put.new(uri.path)
+      req['Content-Length'] = io.size
+      req['Content-Type'] = file_handle.mimetype
+      req.body_stream = io
+      put_response = Net::HTTP.new(uri.host, uri.port).request(req)
     end
   end
 end
