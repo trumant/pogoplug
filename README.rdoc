@@ -2,7 +2,7 @@
 
 A simple Ruby wrapper on the PogoPlug API - http://download.pogoplug.com/dev/web.html
 
-== API Operations Supported
+== Structured API Operations Supported
 
 * getVersion
 * loginUser
@@ -11,15 +11,35 @@ A simple Ruby wrapper on the PogoPlug API - http://download.pogoplug.com/dev/web
 * listFiles
 * createFile
 
+== Stream API Operations Supported
+
+* PUT - via PogoPlug::Client.create_file passing an IO
+* GET - via PogoPlug::Client.download
+
 == Examples
 
 === Retrieve the first page of files and folders from the root of a device and service
 
   client = PogoPlug::Client.new
   client.login("some_user@example.com", "some_password")
+
   devices = client.devices
+
   fileListing = client.files(devices.first.id, devices.first.services.first.id)
   fileListing.files
+
+=== Write a file to PogoPlug and then download it
+
+  client = PogoPlug::Client.new
+  client.login("some_user@example.com", "some_password")
+  devices = client.devices
+
+  parent_directory = client.files(devices.first.id, devices.first.services.first.id).files.select { |file| file.directory? }.first
+  file_to_create = PogoPlug::File.new(name: 'your_file_name.txt', type: File::Type::FILE, parent_id: parent_directory.id)
+
+  uploaded_file = client.create_file(devices.first.id, devices.first.services.first, file_to_create, File.open('your_file_name.txt', 'r'))
+
+  downloaded_file = client.download(devices.first.id, devices.first.services.first, uploaded_file)
 
 == Contributing to pogoplug
 
