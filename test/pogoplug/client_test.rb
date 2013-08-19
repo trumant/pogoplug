@@ -188,7 +188,6 @@ module PogoPlug
           file_to_download = @fileListing.files.select { |f| f.file? }.first
           if file_to_download
             io = @client.download(@device.id, @service, file_to_download)
-            file = ::File.write(file_to_download.name, io, nil, mode: 'wb')
             assert_equal(file_to_download.size, io.size, "File should be the same size as the descriptor said it would be")
           end
         end
