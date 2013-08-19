@@ -17,8 +17,8 @@ Jeweler::Tasks.new do |gem|
   gem.name = "pogoplug"
   gem.homepage = "http://github.com/trumant/pogoplug"
   gem.license = "MIT"
-  gem.summary = %Q{TODO: one-line summary of your gem}
-  gem.description = %Q{TODO: longer description of your gem}
+  gem.summary = %Q{A Ruby wrapper around the PogoPlug API}
+  gem.description = %Q{}
   gem.email = "trumant@gmail.com"
   gem.authors = ["Travis Truman"]
   # dependencies defined in Gemfile
