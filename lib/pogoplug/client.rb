@@ -1,5 +1,6 @@
 require 'httparty'
 require 'json'
+require 'open-uri'
 
 module PogoPlug
   class Client
@@ -72,10 +73,15 @@ module PogoPlug
       response = self.class.get('/createFile', query: params)
       file_handle = File.from_json(response.parsed_response['file'])
       if io
-        send_file(token, device_id, service, file_handle, io)
+        send_file(device_id, service, file_handle, io)
         file_handle.size = io.size
       end
       file_handle
+    end
+
+    def download(device_id, service, file)
+      raise "Directories cannot be downloaded" unless file.file?
+      open(URI.escape("#{service.api_url}files/#{@token}/#{device_id}/#{service.id}/#{file.id}/dl/#{file.name}")).read
     end
 
     private
@@ -92,9 +98,9 @@ module PogoPlug
       end
     end
 
-    def send_file(token, device_id, service, file_handle, io)
+    def send_file(device_id, service, file_handle, io)
       parent = file_handle.id || 0
-      uri = URI.parse("#{service.api_url}files/#{token}/#{device_id}/#{service.id}/#{parent}/#{file_handle.name}")
+      uri = URI.parse("#{service.api_url}files/#{@token}/#{device_id}/#{service.id}/#{parent}/#{file_handle.name}")
       req = Net::HTTP::Put.new(uri.path)
       req['Content-Length'] = io.size
       req['Content-Type'] = file_handle.mimetype

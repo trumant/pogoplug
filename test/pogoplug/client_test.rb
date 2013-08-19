@@ -141,11 +141,28 @@ module PogoPlug
 
       context "#download" do
         setup do
-          @token = @client.login(@username, @password)
-          @device = @client.devices(@token).first
+          @client.login(@username, @password)
+          @device = @client.devices.first
+          @service = @device.services.first
+          @fileListing = @client.files(@device.id, @service.id)
         end
 
-        should_eventually "fetch the file specified" do
+        should "fetch the file specified" do
+          file_to_download = @fileListing.files.select { |f| f.file? }.first
+          if file_to_download
+            io = @client.download(@device.id, @service, file_to_download)
+            file = ::File.write(file_to_download.name, io, nil, mode: 'wb')
+            assert_equal(file_to_download.size, io.size, "File should be the same size as the descriptor said it would be")
+          end
+        end
+
+        should "refuse to download a directory" do
+          file_to_download = @fileListing.files.select { |f| f.directory? }.first
+          if file_to_download
+            assert_raise(RuntimeError, "Directories cannot be downloaded") do
+              @client.download(@device.id, @service, file_to_download)
+            end
+          end
         end
       end
     end

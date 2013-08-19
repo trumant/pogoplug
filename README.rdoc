@@ -2,6 +2,25 @@
 
 A simple Ruby wrapper on the PogoPlug API - http://download.pogoplug.com/dev/web.html
 
+== API Operations Supported
+
+* getVersion
+* loginUser
+* listDevices
+* listServices
+* listFiles
+* createFile
+
+== Examples
+
+=== Retrieve the first page of files and folders from the root of a device and service
+
+  client = PogoPlug::Client.new
+  client.login("some_user@example.com", "some_password")
+  devices = client.devices
+  fileListing = client.files(devices.first.id, devices.first.services.first.id)
+  fileListing.files
+
 == Contributing to pogoplug
 
 * Check out the latest master to make sure the feature hasn't been implemented or the bug hasn't been fixed yet.
