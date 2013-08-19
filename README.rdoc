@@ -2,6 +2,8 @@
 
 A simple Ruby wrapper on the PogoPlug API - http://download.pogoplug.com/dev/web.html
 
+{<img src="https://travis-ci.org/trumant/pogoplug.png" />}[https://travis-ci.org/trumant/pogoplug]
+
 == Structured API Operations Supported
 
 * getVersion
