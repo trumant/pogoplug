@@ -84,6 +84,12 @@ module PogoPlug
       open(URI.escape("#{service.api_url}files/#{@token}/#{device_id}/#{service.id}/#{file.id}/dl/#{file.name}")).read
     end
 
+    def delete(device_id, service_id, file)
+      params = { valtoken: @token, deviceid: device_id, serviceid: service_id, fileid: file.id }
+      response = self.class.get('/removeFile', query: params)
+      true unless response.code.to_s != '200'
+    end
+
     private
 
     def validate_token

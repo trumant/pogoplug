@@ -129,11 +129,48 @@ module PogoPlug
           @file_to_create.name = ::File.basename(test_file.path)
           created_file = @client.create_file(@device.id, @device.services.first, @file_to_create, test_file)
           assert_not_nil(created_file)
-          # assert_equal(test_file.size, created_file.size)
+          assert_equal(test_file.size, created_file.size)
         end
       end
 
       context "#delete" do
+        setup do
+          @client.login(@username, @password)
+          @device = @client.devices.first
+        end
+
+        should "delete an empty directory" do
+          directory_name = "My test directory #{rand(1000).to_i}"
+          directory = @client.create_file(@device.id, @device.services.first, File.new(name: directory_name, type: File::Type::DIRECTORY))
+          created_directory = @client.files(@device.id, @device.services.first.id).files.select { |file| file.directory? && file.name == directory_name }.first
+
+          assert_not_nil(created_directory, "Test directory was not created")
+          assert_true(@client.delete(@device.id, @device.services.first.id, directory), "Test directory was not deleted")
+
+          deleted_directory = @client.files(@device.id, @device.services.first.id).files.select { |file| file.directory? && file.name == directory_name }.first
+          assert_nil(deleted_directory, "Test directory that was supposed to have been deleted is still returned")
+        end
+
+        should "delete a directory and its children" do
+          parent_directory_name = "My test directory #{rand(1000).to_i}"
+          parent_directory = @client.create_file(@device.id, @device.services.first, File.new(name: parent_directory_name, type: File::Type::DIRECTORY))
+
+          child_directory_name = "My test child directory"
+          child_directory = @client.create_file(@device.id, @device.services.first, File.new(name: child_directory_name, type: File::Type::DIRECTORY, parent_id: parent_directory.id))
+
+          assert_true(@client.delete(@device.id, @device.services.first.id, parent_directory), "Test directory was not deleted")
+
+          deleted_directory = @client.files(@device.id, @device.services.first.id).files.select { |file| file.directory? && file.name == parent_directory_name }.first
+          assert_nil(deleted_directory, "Test directory that was supposed to have been deleted is still returned")
+        end
+
+        should "delete a file" do
+          file_name = "My test file #{rand(1000).to_i}"
+          file_to_create = File.new(name: file_name, type: File::Type::FILE)
+
+          created_file = @client.create_file(@device.id, @device.services.first, file_to_create)
+          assert_true(@client.delete(@device.id, @device.services.first.id, created_file), "File was not deleted")
+        end
       end
 
       context "#copy" do
