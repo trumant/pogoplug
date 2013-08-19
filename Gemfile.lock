@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    pogoplug (0.1.0)
+    pogoplug (0.2.0)
       pogoplug
 
 GEM
