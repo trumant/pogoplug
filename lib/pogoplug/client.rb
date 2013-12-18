@@ -5,10 +5,15 @@ require 'open-uri'
 module PogoPlug
   class Client
     include HTTParty
-    # debug_output $stdout
-    base_uri 'https://service.pogoplug.com/svc/api/json'
     format :json
     attr_accessor :token
+
+    def initialize(base_uri="https://service.pogoplug.com/svc/api/json", debug_logging=false)
+      self.class.base_uri base_uri
+      if debug_logging
+        self.class.debug_output $stdout
+      end
+    end
 
     # Retrieve the current version information of the service
     def version
