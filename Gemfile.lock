@@ -11,6 +11,8 @@ GEM
     atomic (1.1.12)
     builder (3.2.2)
     coderay (1.0.9)
+    crack (0.4.1)
+      safe_yaml (~> 0.9.0)
     faraday (0.8.8)
       multipart-post (~> 1.2.0)
     ffi (1.9.0)
@@ -59,8 +61,11 @@ GEM
       rb-inotify (>= 0.9)
       rb-kqueue (>= 0.2)
     lumberjack (1.0.4)
+    metaclass (0.0.1)
     method_source (0.8.2)
     minitest (4.7.5)
+    mocha (0.14.0)
+      metaclass (~> 0.0.1)
     multi_json (1.7.8)
     multi_xml (0.5.5)
     multipart-post (1.2.0)
@@ -86,6 +91,7 @@ GEM
     rdoc (3.12.2)
       json (~> 1.4)
     ruby_gntp (0.3.4)
+    safe_yaml (0.9.7)
     shoulda (3.5.0)
       shoulda-context (~> 1.0, >= 1.0.1)
       shoulda-matchers (>= 1.4.1, < 3.0)
@@ -102,6 +108,9 @@ GEM
     thread_safe (0.1.2)
       atomic
     tzinfo (0.3.37)
+    webmock (1.16.1)
+      addressable (>= 2.2.7)
+      crack (>= 0.3.2)
 
 PLATFORMS
   ruby
@@ -113,8 +122,10 @@ DEPENDENCIES
   guard-test
   httparty (~> 0.11.0)
   jeweler (~> 1.8.4)
+  mocha
   rake
   rdoc
   ruby_gntp
   shoulda
   simplecov
+  webmock

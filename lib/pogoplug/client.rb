@@ -58,8 +58,10 @@ module PogoPlug
     end
 
     # Retrieve a list of files for a device and service
-    def files(device_id, service_id, offset=0)
+    def files(device_id, service_id, parent_id=nil, offset=0)
       params = { valtoken: @token, deviceid: device_id, serviceid: service_id, pageoffset: offset }
+      params[:parentid] = parent_id unless parent_id.nil?
+
       response = self.class.get('/listFiles', query: params)
       FileListing.from_json(response.parsed_response)
     end
@@ -76,6 +78,7 @@ module PogoPlug
       params = { valtoken: @token, deviceid: device_id, serviceid: service.id, filename: file.name, type: file.type }
       params[:parentid] = file.parent_id unless file.parent_id.nil?
       response = self.class.get('/createFile', query: params)
+      raise_errors(response)
       file_handle = File.from_json(response.parsed_response['file'])
       if io
         send_file(device_id, service, file_handle, io)
@@ -88,6 +91,7 @@ module PogoPlug
       response = self.class.get('/moveFile', query: {
         valtoken: @token, deviceid: device_id, serviceid: service_id,
         fileid: file.id, parentid: parent_directory_id })
+      raise_errors(response)
       true unless response.code.to_s != '200'
     end
 
@@ -111,8 +115,13 @@ module PogoPlug
     end
 
     def raise_errors(response)
-      if response.parsed_response['HB-EXCEPTION'] && response.parsed_response['HB-EXCEPTION']['ecode'] == 606
+      error_code = response.parsed_response['HB-EXCEPTION']['ecode'] if response.parsed_response['HB-EXCEPTION']
+      case error_code
+      when 606
         raise AuthenticationError
+      when 808
+        raise DuplicateNameError
+      else
       end
     end
 

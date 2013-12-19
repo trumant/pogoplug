@@ -9,7 +9,7 @@ module PogoPlug
     end
 
     def empty?
-      @files.empty?
+      files.empty?
     end
 
     def self.from_json(json)
@@ -18,8 +18,10 @@ module PogoPlug
         offset: json['pageoffset'].to_i,
         total_count: json['totalcount'].to_i
       )
-      json['files'].each do |f|
-        listing.files << File.from_json(f)
+      if json['files']
+        json['files'].each do |f|
+          listing.files << File.from_json(f)
+        end
       end
       listing
     end

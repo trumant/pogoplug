@@ -1,9 +1,12 @@
 require_relative 'helper'
 module PogoPlug
   class ClientTest < Test::Unit::TestCase
+    API_HOST = "https://service.pogoplug.com/svc/api/json"
+    WebMock.allow_net_connect!
+
     context "Client" do
       setup do
-        @client = PogoPlug::Client.new("https://service.pogoplug.com/svc/api/json", true)
+        @client = PogoPlug::Client.new(API_HOST, true)
         @username = "gem_test_user@mailinator.com"
         @password = "p@ssw0rd"
       end
@@ -73,10 +76,18 @@ module PogoPlug
           file_listing = @client.files(@device.id, @device.services.first.id)
           # dependent on previous test runs for us to have more than one page of files in the listing
           if file_listing.total_count > file_listing.size
-            second_page = @client.files(@device.id, @device.services.first.id, file_listing.offset + 1)
+            second_page = @client.files(@device.id, @device.services.first.id, nil, file_listing.offset + 1)
             assert_equal(file_listing.offset + 1, second_page.offset, "Expecting the second page listing to have the correct offset")
             assert_false(second_page.empty?, "Expecting the second page of files to have some files")
           end
+        end
+
+        should "provide a list of files under a specified directory" do
+          parent_directory = @client.create_directory(@device.id, @device.services.first, "My Test Directory #{SecureRandom.uuid}")
+          file_listing = @client.files(@device.id, @device.services.first.id, parent_directory.id)
+          assert_not_nil(file_listing, "Files are missing")
+          assert_kind_of(PogoPlug::FileListing, file_listing)
+          assert_true(file_listing.empty?, "Files are expected to be empty")
         end
       end
 
@@ -84,8 +95,8 @@ module PogoPlug
         setup do
           @client.login(@username, @password)
           @device = @client.devices.first
-          @directory_name = "My Test Directory #{rand(1000).to_i}"
-          @child_directory_name = "My Test Child Directory #{rand(1000).to_i}"
+          @directory_name = "My Test Directory #{SecureRandom.uuid}"
+          @child_directory_name = "My Test Child Directory #{SecureRandom.uuid}"
         end
 
         should "create a directory under the root" do
@@ -110,7 +121,7 @@ module PogoPlug
         setup do
           @client.login(@username, @password)
           @device = @client.devices.first
-          @file_name = "My test file #{rand(1000).to_i}"
+          @file_name = "My test file #{SecureRandom.uuid}"
           @parent_directory = @client.files(@device.id, @device.services.first.id).files.select { |file| file.directory? }.first
           @file_to_create = File.new(name: @file_name, type: File::Type::FILE, parent_id: @parent_directory.id)
         end
@@ -140,7 +151,7 @@ module PogoPlug
         end
 
         should "delete an empty directory" do
-          directory_name = "My test directory #{rand(1000).to_i}"
+          directory_name = "My test directory #{SecureRandom.uuid}"
           directory = @client.create_file(@device.id, @device.services.first, File.new(name: directory_name, type: File::Type::DIRECTORY))
           created_directory = @client.files(@device.id, @device.services.first.id).files.select { |file| file.directory? && file.name == directory_name }.first
 
@@ -152,7 +163,7 @@ module PogoPlug
         end
 
         should "delete a directory and its children" do
-          parent_directory_name = "My test directory #{rand(1000).to_i}"
+          parent_directory_name = "My test directory #{SecureRandom.uuid}"
           parent_directory = @client.create_file(@device.id, @device.services.first, File.new(name: parent_directory_name, type: File::Type::DIRECTORY))
 
           child_directory_name = "My test child directory"
@@ -165,7 +176,7 @@ module PogoPlug
         end
 
         should "delete a file" do
-          file_name = "My test file #{rand(1000).to_i}"
+          file_name = "My test file #{SecureRandom.uuid}"
           file_to_create = File.new(name: file_name, type: File::Type::FILE)
 
           created_file = @client.create_file(@device.id, @device.services.first, file_to_create)
@@ -177,8 +188,8 @@ module PogoPlug
         setup do
           @client.login(@username, @password)
           @device = @client.devices.first
-          @directory_name = "My Test Directory #{rand(1000).to_i}"
-          @child_directory_name = "My Test Child Directory #{rand(1000).to_i}"
+          @directory_name = "My Test Directory #{SecureRandom.uuid}"
+          @child_directory_name = "My Test Child Directory #{SecureRandom.uuid}"
         end
 
         should "move a directory to the root" do
@@ -188,20 +199,36 @@ module PogoPlug
         end
 
         should "move a directory" do
-          parent_directory = @client.files(@device.id, @device.services.first.id).files.select { |file| file.directory? }.first
+          parent_directory = @client.create_directory(@device.id, @device.services.first, @directory_name)
           directory = @client.create_directory(@device.id, @device.services.first, @child_directory_name, 0)
           assert_true(@client.move(@device.id, @device.services.first.id, directory, parent_directory.id), "Directory was not moved")
         end
 
         should "move a file" do
-          parent_directory = @client.files(@device.id, @device.services.first.id).files.select { |file| file.directory? }.first
+          directory = @client.create_directory(@device.id, @device.services.first, @directory_name)
+
           test_file = ::File.new(::File.expand_path('../../test_file.txt', __FILE__), 'rb')
           file_to_create = File.new(name: ::File.basename(test_file.path), type: File::Type::FILE, parent_id: 0)
-          created_file = @client.create_file(@device.id, @device.services.first, @file_to_create, test_file)
+          created_file = @client.create_file(@device.id, @device.services.first, file_to_create, test_file)
           assert_not_nil(created_file)
           assert_equal(test_file.size, created_file.size)
 
-          assert_true(@client.move(@device.id, @device.services.first.id, created_file, parent_directory.id), "File was not moved")
+          assert_true(@client.move(@device.id, @device.services.first.id, created_file, directory.id), "File was not moved")
+        end
+
+        should "raise a DuplicateNameError when attempting to move a file to a directory containing a file of the same name" do
+          file = mock("PogoPlug::File")
+          file.stubs(:id).returns("some_id_value")
+
+          stub_request(:any, /.*pogoplug.*/)
+            .to_return(
+              body: { "HB-EXCEPTION" => { ecode: 808, message: "File Exists" } }.to_json,
+              status: 200,
+              headers: { "Content-Type" => "application/x-javascript;charset=utf-8" }
+            )
+          assert_raise(PogoPlug::DuplicateNameError, "DuplicateNameError should have been raised") do
+            @client.move(@device.id, @device.services.first.id, file, nil)
+          end
         end
       end
 

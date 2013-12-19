@@ -9,6 +9,7 @@ require 'pogoplug/file_listing'
 require 'pogoplug/service'
 require 'pogoplug/api_version'
 require 'pogoplug/authentication_error'
+require 'pogoplug/duplicate_name_error'
 
 module PogoPlug
 end

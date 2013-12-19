@@ -9,6 +9,7 @@ rescue Bundler::BundlerError => e
 end
 require 'test/unit'
 require 'shoulda'
+require "mocha/setup"
 
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 $LOAD_PATH.unshift(File.dirname(__FILE__))
@@ -17,6 +18,8 @@ require 'simplecov'
 SimpleCov.start
 
 require 'pogoplug'
+
+require 'webmock/test_unit'
 
 class Test::Unit::TestCase
 end

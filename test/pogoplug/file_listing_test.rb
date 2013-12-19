@@ -137,6 +137,16 @@ module PogoPlug
           assert_equal(4, listing.files.size, "Expected 4 files")
           assert_false(listing.empty?)
         end
+
+        should "produce a file listing from json returned for empty folder" do
+          json = "{\"pageoffset\":\"0\",\"count\":\"0\",\"totalcount\":\"0\"}"
+          listing = FileListing.from_json(JSON::parse(json))
+
+          assert_equal(0, listing.size, "Size does not match")
+          assert_equal(0, listing.offset, "Offset does not match")
+          assert_equal(0, listing.total_count)
+          assert_true(listing.empty?, "Should be empty")
+        end
       end
     end
   end
