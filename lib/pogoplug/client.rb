@@ -84,6 +84,13 @@ module PogoPlug
       file_handle
     end
 
+    def move(device_id, service_id, file, parent_directory_id)
+      response = self.class.get('/moveFile', query: {
+        valtoken: @token, deviceid: device_id, serviceid: service_id,
+        fileid: file.id, parentid: parent_directory_id })
+      true unless response.code.to_s != '200'
+    end
+
     def download(device_id, service, file)
       raise "Directories cannot be downloaded" unless file.file?
       open(URI.escape("#{service.api_url}files/#{@token}/#{device_id}/#{service.id}/#{file.id}/dl/#{file.name}")).read

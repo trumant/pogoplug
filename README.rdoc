@@ -12,6 +12,7 @@ A simple Ruby wrapper on the PogoPlug API - http://download.pogoplug.com/dev/web
 * listServices
 * listFiles
 * createFile
+* moveFile
 * removeFile
 
 == Stream API Operations Supported

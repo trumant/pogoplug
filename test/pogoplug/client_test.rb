@@ -3,7 +3,7 @@ module PogoPlug
   class ClientTest < Test::Unit::TestCase
     context "Client" do
       setup do
-        @client = PogoPlug::Client.new
+        @client = PogoPlug::Client.new("https://service.pogoplug.com/svc/api/json", true)
         @username = "gem_test_user@mailinator.com"
         @password = "p@ssw0rd"
       end
@@ -170,6 +170,38 @@ module PogoPlug
 
           created_file = @client.create_file(@device.id, @device.services.first, file_to_create)
           assert_true(@client.delete(@device.id, @device.services.first.id, created_file), "File was not deleted")
+        end
+      end
+
+      context "#move" do
+        setup do
+          @client.login(@username, @password)
+          @device = @client.devices.first
+          @directory_name = "My Test Directory #{rand(1000).to_i}"
+          @child_directory_name = "My Test Child Directory #{rand(1000).to_i}"
+        end
+
+        should "move a directory to the root" do
+          parent_directory = @client.files(@device.id, @device.services.first.id).files.select { |file| file.directory? }.first
+          directory = @client.create_directory(@device.id, @device.services.first, @child_directory_name, parent_directory.id)
+          assert_true(@client.move(@device.id, @device.services.first.id, directory, 0), "Directory was not moved to the root")
+        end
+
+        should "move a directory" do
+          parent_directory = @client.files(@device.id, @device.services.first.id).files.select { |file| file.directory? }.first
+          directory = @client.create_directory(@device.id, @device.services.first, @child_directory_name, 0)
+          assert_true(@client.move(@device.id, @device.services.first.id, directory, parent_directory.id), "Directory was not moved")
+        end
+
+        should "move a file" do
+          parent_directory = @client.files(@device.id, @device.services.first.id).files.select { |file| file.directory? }.first
+          test_file = ::File.new(::File.expand_path('../../test_file.txt', __FILE__), 'rb')
+          file_to_create = File.new(name: ::File.basename(test_file.path), type: File::Type::FILE, parent_id: 0)
+          created_file = @client.create_file(@device.id, @device.services.first, @file_to_create, test_file)
+          assert_not_nil(created_file)
+          assert_equal(test_file.size, created_file.size)
+
+          assert_true(@client.move(@device.id, @device.services.first.id, created_file, parent_directory.id), "File was not moved")
         end
       end
 
