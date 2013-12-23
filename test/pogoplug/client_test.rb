@@ -1,7 +1,10 @@
+require 'tmpdir'
+
 require_relative 'helper'
+
 module PogoPlug
   class ClientTest < Test::Unit::TestCase
-    API_HOST = "https://service.pogoplug.com/svc/api/json"
+    API_HOST = "https://service.pogoplug.com/"
     WebMock.allow_net_connect!
 
     context "Client" do
@@ -153,13 +156,7 @@ module PogoPlug
         should "delete an empty directory" do
           directory_name = "My test directory #{SecureRandom.uuid}"
           directory = @client.create_file(@device.id, @device.services.first, File.new(name: directory_name, type: File::Type::DIRECTORY))
-          created_directory = @client.files(@device.id, @device.services.first.id).files.select { |file| file.directory? && file.name == directory_name }.first
-
-          assert_not_nil(created_directory, "Test directory was not created")
           assert_true(@client.delete(@device.id, @device.services.first.id, directory), "Test directory was not deleted")
-
-          deleted_directory = @client.files(@device.id, @device.services.first.id).files.select { |file| file.directory? && file.name == directory_name }.first
-          assert_nil(deleted_directory, "Test directory that was supposed to have been deleted is still returned")
         end
 
         should "delete a directory and its children" do
@@ -257,6 +254,24 @@ module PogoPlug
             assert_raise(RuntimeError, "Directories cannot be downloaded") do
               @client.download(@device.id, @service, file_to_download)
             end
+          end
+        end
+      end
+
+      context "#download_to" do
+        setup do
+          @client.login(@username, @password)
+          @device = @client.devices.first
+          @service = @device.services.first
+          @fileListing = @client.files(@device.id, @service.id)
+        end
+
+        should "fetch the file specified" do
+          file_to_download = @fileListing.files.select { |f| f.file? }.first
+          if file_to_download
+            destination = "#{Dir.tmpdir}/#{file_to_download.name}"
+            io = @client.download_to(@device.id, @service.id, file_to_download, destination)
+            assert_equal(file_to_download.size, ::File.open(destination).size, "File should be the same size as the descriptor said it would be")
           end
         end
       end

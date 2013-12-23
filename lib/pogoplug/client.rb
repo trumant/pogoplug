@@ -6,10 +6,11 @@ module PogoPlug
   class Client
     include HTTParty
     format :json
-    attr_accessor :token
+    attr_accessor :token, :api_domain
 
-    def initialize(base_uri="https://service.pogoplug.com/svc/api/json", debug_logging=false)
-      self.class.base_uri base_uri
+    def initialize(api_domain="https://service.pogoplug.com/", debug_logging=false)
+      @api_domain = api_domain
+      self.class.base_uri "#{api_domain}svc/api/json"
       if debug_logging
         self.class.debug_output $stdout
       end
@@ -100,6 +101,20 @@ module PogoPlug
       open(URI.escape("#{service.api_url}files/#{@token}/#{device_id}/#{service.id}/#{file.id}/dl/#{file.name}")).read
     end
 
+    def download_to(device_id, service_id, file, destination)
+      raise "Directories cannot be downloaded" unless file.file?
+      target = ::File.open(destination, "w")
+      begin
+        IO.copy_stream(
+          open(URI.escape("#{files_url}/#{@token}/#{device_id}/#{service_id}/#{file.id}/dl/#{file.name}")),
+          target
+        )
+      ensure
+        target.close
+      end
+      target
+    end
+
     def delete(device_id, service_id, file)
       params = { valtoken: @token, deviceid: device_id, serviceid: service_id, fileid: file.id }
       response = self.class.get('/removeFile', query: params)
@@ -107,6 +122,10 @@ module PogoPlug
     end
 
     private
+
+    def files_url
+      "#{api_domain}svc/files"
+    end
 
     def validate_token
       if @token.nil?
