@@ -67,6 +67,13 @@ module PogoPlug
       FileListing.from_json(response.parsed_response)
     end
 
+    # Retrieve a single file or directory
+    def file(device_id, service_id, file_id)
+      params = { valtoken: @token, deviceid: device_id, serviceid: service_id, fileid: file_id }
+      response = self.class.get('/getFile', query: params)
+      File.from_json(response.parsed_response['file'])
+    end
+
     def create_directory(device_id, service_id, directory_name, parent_id=nil)
       create_file(device_id, service_id, File.new(name: directory_name, parent_id: parent_id, type: File::Type::DIRECTORY))
     end
@@ -82,7 +89,7 @@ module PogoPlug
       raise_errors(response)
       file_handle = File.from_json(response.parsed_response['file'])
       if io
-        send_file(device_id, service, file_handle, io)
+        send_file(device_id, service.id, file_handle, io)
         file_handle.size = io.size
       end
       file_handle
@@ -144,9 +151,9 @@ module PogoPlug
       end
     end
 
-    def send_file(device_id, service, file_handle, io)
+    def send_file(device_id, service_id, file_handle, io)
       parent = file_handle.id || 0
-      uri = URI.parse("#{service.api_url}files/#{@token}/#{device_id}/#{service.id}/#{parent}/#{file_handle.name}")
+      uri = URI.parse("#{files_url}/#{@token}/#{device_id}/#{service_id}/#{parent}/#{file_handle.name}")
       req = Net::HTTP::Put.new(uri.path)
       req['Content-Length'] = io.size
       req['Content-Type'] = file_handle.mimetype
