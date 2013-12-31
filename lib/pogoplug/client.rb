@@ -71,6 +71,7 @@ module PogoPlug
     def file(device_id, service_id, file_id)
       params = { valtoken: @token, deviceid: device_id, serviceid: service_id, fileid: file_id }
       response = self.class.get('/getFile', query: params)
+      raise_errors(response)
       File.from_json(response.parsed_response['file'])
     end
 
@@ -100,7 +101,7 @@ module PogoPlug
         valtoken: @token, deviceid: device_id, serviceid: service_id,
         fileid: file.id, parentid: parent_directory_id })
       raise_errors(response)
-      true unless response.code.to_s != '200'
+      File.from_json(response.parsed_response['file'])
     end
 
     def download(device_id, service, file)
@@ -147,6 +148,8 @@ module PogoPlug
         raise AuthenticationError
       when 808
         raise DuplicateNameError
+      when 804
+        raise NotFoundError
       else
       end
     end

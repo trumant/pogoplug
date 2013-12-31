@@ -192,13 +192,13 @@ module PogoPlug
         should "move a directory to the root" do
           parent_directory = @client.files(@device.id, @device.services.first.id).files.select { |file| file.directory? }.first
           directory = @client.create_directory(@device.id, @device.services.first, @child_directory_name, parent_directory.id)
-          assert_true(@client.move(@device.id, @device.services.first.id, directory, 0), "Directory was not moved to the root")
+          assert_not_nil(@client.move(@device.id, @device.services.first.id, directory, 0), "Directory was not moved to the root")
         end
 
         should "move a directory" do
           parent_directory = @client.create_directory(@device.id, @device.services.first, @directory_name)
           directory = @client.create_directory(@device.id, @device.services.first, @child_directory_name, 0)
-          assert_true(@client.move(@device.id, @device.services.first.id, directory, parent_directory.id), "Directory was not moved")
+          assert_not_nil(@client.move(@device.id, @device.services.first.id, directory, parent_directory.id), "Directory was not moved")
         end
 
         should "move a file" do
@@ -210,7 +210,7 @@ module PogoPlug
           assert_not_nil(created_file)
           assert_equal(test_file.size, created_file.size)
 
-          assert_true(@client.move(@device.id, @device.services.first.id, created_file, directory.id), "File was not moved")
+          assert_not_nil(@client.move(@device.id, @device.services.first.id, created_file, directory.id), "File was not moved")
         end
 
         should "raise a DuplicateNameError when attempting to move a file to a directory containing a file of the same name" do
@@ -225,6 +225,25 @@ module PogoPlug
             )
           assert_raise(PogoPlug::DuplicateNameError, "DuplicateNameError should have been raised") do
             @client.move(@device.id, @device.services.first.id, file, nil)
+          end
+        end
+      end
+
+      context "#file" do
+        setup do
+          @client.login(@username, @password)
+          @device = @client.devices.first
+        end
+
+        should "raise a NotFoundError when attempting to get file metadata for a missing file" do
+          stub_request(:any, /.*pogoplug.*/)
+            .to_return(
+              body: { "HB-EXCEPTION" => { ecode: 804, message: "No such file" } }.to_json,
+              status: 500,
+              headers: { "Content-Type" => "application/x-javascript;charset=utf-8" }
+            )
+          assert_raise(PogoPlug::NotFoundError, "NotFoundError should have been raised") do
+            @client.file(@device.id, @device.services.first.id, "not_a_valid_file_id")
           end
         end
       end
