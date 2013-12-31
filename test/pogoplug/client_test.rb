@@ -216,6 +216,7 @@ module PogoPlug
         should "raise a DuplicateNameError when attempting to move a file to a directory containing a file of the same name" do
           file = mock("PogoPlug::File")
           file.stubs(:id).returns("some_id_value")
+          file.stubs(:name).returns("some_file_name.jpg")
 
           stub_request(:any, /.*pogoplug.*/)
             .to_return(
