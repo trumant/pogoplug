@@ -83,14 +83,14 @@ module PogoPlug
     # The provided file argument is expected to contain at minimum
     # a name, type and parent_id. If it has a mimetype that will be assumed to
     # match the mimetype of the io.
-    def create_file(device_id, service, file, io=nil)
-      params = { valtoken: @token, deviceid: device_id, serviceid: service.id, filename: file.name, type: file.type }
+    def create_file(device_id, service_id, file, io=nil)
+      params = { valtoken: @token, deviceid: device_id, serviceid: service_id, filename: file.name, type: file.type }
       params[:parentid] = file.parent_id unless file.parent_id.nil?
       response = self.class.get('/createFile', query: params)
       raise_errors(response)
       file_handle = File.from_json(response.parsed_response['file'])
       if io
-        send_file(device_id, service.id, file_handle, io)
+        send_file(device_id, service_id, file_handle, io)
         file_handle.size = io.size
       end
       file_handle
