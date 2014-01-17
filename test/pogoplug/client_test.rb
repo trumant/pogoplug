@@ -86,7 +86,7 @@ module PogoPlug
         end
 
         should "provide a list of files under a specified directory" do
-          parent_directory = @client.create_directory(@device.id, @device.services.first, "My Test Directory #{SecureRandom.uuid}")
+          parent_directory = @client.create_directory(@device.id, @device.services.first.id, "My Test Directory #{SecureRandom.uuid}")
           file_listing = @client.files(@device.id, @device.services.first.id, parent_directory.id)
           assert_not_nil(file_listing, "Files are missing")
           assert_kind_of(PogoPlug::FileListing, file_listing)
@@ -103,7 +103,7 @@ module PogoPlug
         end
 
         should "create a directory under the root" do
-          directory = @client.create_directory(@device.id, @device.services.first, @directory_name)
+          directory = @client.create_directory(@device.id, @device.services.first.id, @directory_name)
           assert_not_nil(directory, "Directory should have been created")
           assert_equal(directory.name, @directory_name, "Directory should have the correct name")
           assert_equal(directory.parent_id, "0", "Directory should be at the root")
@@ -112,7 +112,7 @@ module PogoPlug
 
         should "create a directory under the specified parent" do
           parent_directory = @client.files(@device.id, @device.services.first.id).files.select { |file| file.directory? }.first
-          directory = @client.create_directory(@device.id, @device.services.first, @child_directory_name, parent_directory.id)
+          directory = @client.create_directory(@device.id, @device.services.first.id, @child_directory_name, parent_directory.id)
           assert_not_nil(directory, "Directory should have been created")
           assert_equal(directory.name, @child_directory_name, "Directory should have the correct name")
           assert_equal(directory.parent_id, parent_directory.id, "Directory should be under the correct parent")
@@ -130,7 +130,7 @@ module PogoPlug
         end
 
         should "create a file handle" do
-          created_file = @client.create_file(@device.id, @device.services.first, @file_to_create)
+          created_file = @client.create_file(@device.id, @device.services.first.id, @file_to_create)
           assert_not_nil(created_file, "File should have been created")
           assert_equal(@file_name, created_file.name)
           assert_equal(@file_to_create.type, created_file.type)
@@ -141,7 +141,7 @@ module PogoPlug
         should "create a file handle and attach the bits" do
           test_file = ::File.new(::File.expand_path('../../test_file.txt', __FILE__), 'rb')
           @file_to_create.name = ::File.basename(test_file.path)
-          created_file = @client.create_file(@device.id, @device.services.first, @file_to_create, test_file)
+          created_file = @client.create_file(@device.id, @device.services.first.id, @file_to_create, test_file)
           assert_not_nil(created_file)
           assert_equal(test_file.size, created_file.size)
         end
@@ -155,20 +155,20 @@ module PogoPlug
 
         should "delete an empty directory" do
           directory_name = "My test directory #{SecureRandom.uuid}"
-          directory = @client.create_file(@device.id, @device.services.first, File.new(name: directory_name, type: File::Type::DIRECTORY))
+          directory = @client.create_file(@device.id, @device.services.first.id, File.new(name: directory_name, type: File::Type::DIRECTORY))
           assert_true(@client.delete(@device.id, @device.services.first.id, directory), "Test directory was not deleted")
         end
 
         should "delete a directory and its children" do
           parent_directory_name = "My test directory #{SecureRandom.uuid}"
-          parent_directory = @client.create_file(@device.id, @device.services.first, File.new(name: parent_directory_name, type: File::Type::DIRECTORY))
+          parent_directory = @client.create_file(@device.id, @device.services.first.id, File.new(name: parent_directory_name, type: File::Type::DIRECTORY))
 
           child_directory_name = "My test child directory"
-          child_directory = @client.create_file(@device.id, @device.services.first, File.new(name: child_directory_name, type: File::Type::DIRECTORY, parent_id: parent_directory.id))
+          child_directory = @client.create_file(@device.id, @device.services.first.id, File.new(name: child_directory_name, type: File::Type::DIRECTORY, parent_id: parent_directory.id))
 
-          assert_true(@client.delete(@device.id, @device.services.first.id, parent_directory), "Test directory was not deleted")
+          assert_true(@client.delete(@device.id, @device.services.first, parent_directory), "Test directory was not deleted")
 
-          deleted_directory = @client.files(@device.id, @device.services.first.id).files.select { |file| file.directory? && file.name == parent_directory_name }.first
+          deleted_directory = @client.files(@device.id, @device.services.first).files.select { |file| file.directory? && file.name == parent_directory_name }.first
           assert_nil(deleted_directory, "Test directory that was supposed to have been deleted is still returned")
         end
 
@@ -176,7 +176,7 @@ module PogoPlug
           file_name = "My test file #{SecureRandom.uuid}"
           file_to_create = File.new(name: file_name, type: File::Type::FILE)
 
-          created_file = @client.create_file(@device.id, @device.services.first, file_to_create)
+          created_file = @client.create_file(@device.id, @device.services.first.id, file_to_create)
           assert_true(@client.delete(@device.id, @device.services.first.id, created_file), "File was not deleted")
         end
       end
@@ -191,22 +191,22 @@ module PogoPlug
 
         should "move a directory to the root" do
           parent_directory = @client.files(@device.id, @device.services.first.id).files.select { |file| file.directory? }.first
-          directory = @client.create_directory(@device.id, @device.services.first, @child_directory_name, parent_directory.id)
+          directory = @client.create_directory(@device.id, @device.services.first.id, @child_directory_name, parent_directory.id)
           assert_not_nil(@client.move(@device.id, @device.services.first.id, directory, 0), "Directory was not moved to the root")
         end
 
         should "move a directory" do
-          parent_directory = @client.create_directory(@device.id, @device.services.first, @directory_name)
-          directory = @client.create_directory(@device.id, @device.services.first, @child_directory_name, 0)
+          parent_directory = @client.create_directory(@device.id, @device.services.first.id, @directory_name)
+          directory = @client.create_directory(@device.id, @device.services.first.id, @child_directory_name, 0)
           assert_not_nil(@client.move(@device.id, @device.services.first.id, directory, parent_directory.id), "Directory was not moved")
         end
 
         should "move a file" do
-          directory = @client.create_directory(@device.id, @device.services.first, @directory_name)
+          directory = @client.create_directory(@device.id, @device.services.first.id, @directory_name)
 
           test_file = ::File.new(::File.expand_path('../../test_file.txt', __FILE__), 'rb')
           file_to_create = File.new(name: ::File.basename(test_file.path), type: File::Type::FILE, parent_id: 0)
-          created_file = @client.create_file(@device.id, @device.services.first, file_to_create, test_file)
+          created_file = @client.create_file(@device.id, @device.services.first.id, file_to_create, test_file)
           assert_not_nil(created_file)
           assert_equal(test_file.size, created_file.size)
 
