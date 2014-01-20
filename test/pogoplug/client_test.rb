@@ -156,7 +156,7 @@ module PogoPlug
         should "delete an empty directory" do
           directory_name = "My test directory #{SecureRandom.uuid}"
           directory = @client.create_file(@device.id, @device.services.first.id, File.new(name: directory_name, type: File::Type::DIRECTORY))
-          assert_true(@client.delete(@device.id, @device.services.first.id, directory), "Test directory was not deleted")
+          assert_true(@client.delete(@device.id, @device.services.first.id, directory.id), "Test directory was not deleted")
         end
 
         should "delete a directory and its children" do
@@ -166,7 +166,7 @@ module PogoPlug
           child_directory_name = "My test child directory"
           child_directory = @client.create_file(@device.id, @device.services.first.id, File.new(name: child_directory_name, type: File::Type::DIRECTORY, parent_id: parent_directory.id))
 
-          assert_true(@client.delete(@device.id, @device.services.first, parent_directory), "Test directory was not deleted")
+          assert_true(@client.delete(@device.id, @device.services.first, parent_directory.id), "Test directory was not deleted")
 
           deleted_directory = @client.files(@device.id, @device.services.first).files.select { |file| file.directory? && file.name == parent_directory_name }.first
           assert_nil(deleted_directory, "Test directory that was supposed to have been deleted is still returned")
@@ -177,7 +177,7 @@ module PogoPlug
           file_to_create = File.new(name: file_name, type: File::Type::FILE)
 
           created_file = @client.create_file(@device.id, @device.services.first.id, file_to_create)
-          assert_true(@client.delete(@device.id, @device.services.first.id, created_file), "File was not deleted")
+          assert_true(@client.delete(@device.id, @device.services.first.id, created_file.id), "File was not deleted")
         end
       end
 
