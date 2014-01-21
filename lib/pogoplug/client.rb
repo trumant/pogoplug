@@ -1,7 +1,6 @@
 require 'httparty'
 require 'json'
 require 'open-uri'
-require 'pry'
 
 module PogoPlug
   class Client
