@@ -278,6 +278,23 @@ module PogoPlug
         end
       end
 
+      context "#search_file_by_name" do
+        setup do
+          @client.login(@username, @password)
+          @device = @client.devices.first
+          @service = @device.services.first
+        end
+
+        should "find a file by name" do
+          parent_directory_name = "My test directory #{SecureRandom.uuid}"
+          parent_directory = @client.create_file(@device.id, @device.services.first.id, File.new(name: parent_directory_name, type: File::Type::DIRECTORY))
+
+          child_directory_name = "My test child directory name #{SecureRandom.uuid}"
+          child_directory = @client.create_file(@device.id, @device.services.first.id, File.new(name: child_directory_name, type: File::Type::DIRECTORY, parent_id: parent_directory.id))
+          assert_equal(@client.search_file_by_name(@device.id, @service.id, child_directory_name).parent_id, child_directory.parent_id)
+        end
+      end
+
       context "#download_to" do
         setup do
           @client.login(@username, @password)
