@@ -129,8 +129,8 @@ module PogoPlug
           @file_to_create = File.new(name: @file_name, type: File::Type::FILE, parent_id: @parent_directory.id)
         end
 
-        should "create a file object when the correct create_file method is called" do
-          @client.create_file(@device.id, @device.services.first.id, @file_name, @parent_directory.id)
+        should "create a file object when the create_file method is called" do
+          created_file = @client.create_file(@device.id, @device.services.first.id, @file_name, @parent_directory.id)
           assert_not_nil(created_file, "File should have been created")
           assert_equal(@file_name, created_file.name)
           assert_equal(@file_to_create.type, created_file.type)
@@ -139,7 +139,7 @@ module PogoPlug
         end
 
         should "create a file handle" do
-          created_file = @client.create_file(@device.id, @device.services.first.id, @file_to_create)
+          created_file = @client.create_entity(@device.id, @device.services.first.id, @file_to_create)
           assert_not_nil(created_file, "File should have been created")
           assert_equal(@file_name, created_file.name)
           assert_equal(@file_to_create.type, created_file.type)
@@ -150,7 +150,7 @@ module PogoPlug
         should "create a file handle and attach the bits" do
           test_file = ::File.new(::File.expand_path('../../test_file.txt', __FILE__), 'rb')
           @file_to_create.name = ::File.basename(test_file.path)
-          created_file = @client.create_file(@device.id, @device.services.first.id, @file_to_create, test_file)
+          created_file = @client.create_entity(@device.id, @device.services.first.id, @file_to_create, test_file)
           assert_not_nil(created_file)
           assert_equal(test_file.size, created_file.size)
         end
@@ -164,16 +164,16 @@ module PogoPlug
 
         should "delete an empty directory" do
           directory_name = "My test directory #{SecureRandom.uuid}"
-          directory = @client.create_file(@device.id, @device.services.first.id, File.new(name: directory_name, type: File::Type::DIRECTORY))
+          directory = @client.create_entity(@device.id, @device.services.first.id, File.new(name: directory_name, type: File::Type::DIRECTORY))
           assert_true(@client.delete(@device.id, @device.services.first.id, directory.id), "Test directory was not deleted")
         end
 
         should "delete a directory and its children" do
           parent_directory_name = "My test directory #{SecureRandom.uuid}"
-          parent_directory = @client.create_file(@device.id, @device.services.first.id, File.new(name: parent_directory_name, type: File::Type::DIRECTORY))
+          parent_directory = @client.create_entity(@device.id, @device.services.first.id, File.new(name: parent_directory_name, type: File::Type::DIRECTORY))
 
           child_directory_name = "My test child directory"
-          child_directory = @client.create_file(@device.id, @device.services.first.id, File.new(name: child_directory_name, type: File::Type::DIRECTORY, parent_id: parent_directory.id))
+          child_directory = @client.create_entity(@device.id, @device.services.first.id, File.new(name: child_directory_name, type: File::Type::DIRECTORY, parent_id: parent_directory.id))
 
           assert_true(@client.delete(@device.id, @device.services.first, parent_directory.id), "Test directory was not deleted")
 
@@ -185,7 +185,7 @@ module PogoPlug
           file_name = "My test file #{SecureRandom.uuid}"
           file_to_create = File.new(name: file_name, type: File::Type::FILE)
 
-          created_file = @client.create_file(@device.id, @device.services.first.id, file_to_create)
+          created_file = @client.create_entity(@device.id, @device.services.first.id, file_to_create)
           assert_true(@client.delete(@device.id, @device.services.first.id, created_file.id), "File was not deleted")
         end
       end
@@ -215,7 +215,7 @@ module PogoPlug
 
           test_file = ::File.new(::File.expand_path('../../test_file.txt', __FILE__), 'rb')
           file_to_create = File.new(name: ::File.basename(test_file.path), type: File::Type::FILE, parent_id: 0)
-          created_file = @client.create_file(@device.id, @device.services.first.id, file_to_create, test_file)
+          created_file = @client.create_entity(@device.id, @device.services.first.id, file_to_create, test_file)
           assert_not_nil(created_file)
           assert_equal(test_file.size, created_file.size)
 
@@ -296,10 +296,10 @@ module PogoPlug
 
         should "find a file by name" do
           parent_directory_name = "My test directory #{SecureRandom.uuid}"
-          parent_directory = @client.create_file(@device.id, @device.services.first.id, File.new(name: parent_directory_name, type: File::Type::DIRECTORY))
+          parent_directory = @client.create_entity(@device.id, @device.services.first.id, File.new(name: parent_directory_name, type: File::Type::DIRECTORY))
 
           child_directory_name = "My test child directory name #{SecureRandom.uuid}"
-          child_directory = @client.create_file(@device.id, @device.services.first.id, File.new(name: child_directory_name, type: File::Type::DIRECTORY, parent_id: parent_directory.id))
+          child_directory = @client.create_entity(@device.id, @device.services.first.id, File.new(name: child_directory_name, type: File::Type::DIRECTORY, parent_id: parent_directory.id))
           assert_equal(@client.search_file_by_name(@device.id, @service.id, child_directory_name).parent_id, child_directory.parent_id)
         end
       end

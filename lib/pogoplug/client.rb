@@ -76,18 +76,18 @@ module PogoPlug
     end
 
     def create_directory(device_id, service_id, directory_name, parent_id=nil)
-      create_file(device_id, service_id, File.new(name: directory_name, parent_id: parent_id, type: File::Type::DIRECTORY))
+      create_entity(device_id, service_id, File.new(name: directory_name, parent_id: parent_id, type: File::Type::DIRECTORY))
     end
 
     def create_file(device_id, service_id, file_name, parent_id, io=nil)
-      create_file(device_id, service_id, File.new(name: file_name, parent_id: parent_id, type: File::Type::FILE), io)
+      create_entity(device_id, service_id, File.new(name: file_name, parent_id: parent_id, type: File::Type::FILE), io)
     end
 
     # Creates a file handle and optionally attach an io.
     # The provided file argument is expected to contain at minimum
     # a name, type and parent_id. If it has a mimetype that will be assumed to
     # match the mimetype of the io.
-    def create_file(device_id, service_id, file, io=nil)
+    def create_entity(device_id, service_id, file, io=nil)
       params = { valtoken: @token, deviceid: device_id, serviceid: service_id, filename: file.name, type: file.type }
       params[:parentid] = file.parent_id unless file.parent_id.nil?
       response = self.class.get('/createFile', query: params)
