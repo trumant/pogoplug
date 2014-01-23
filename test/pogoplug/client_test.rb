@@ -129,6 +129,16 @@ module PogoPlug
           @file_to_create = File.new(name: @file_name, type: File::Type::FILE, parent_id: @parent_directory.id)
         end
 
+        should "create a file object when the correct method is called" do
+          #create_file(device_id, service_id, file_name, parent_id, io=nil)
+          @client.create_file(@device.id, @device.services.first.id, @file_name, @parent_directory.id)
+          assert_not_nil(created_file, "File should have been created")
+          assert_equal(@file_name, created_file.name)
+          assert_equal(@file_to_create.type, created_file.type)
+          assert_equal(@file_to_create.parent_id, created_file.parent_id)
+          assert_not_nil(created_file.id)
+        end
+
         should "create a file handle" do
           created_file = @client.create_file(@device.id, @device.services.first.id, @file_to_create)
           assert_not_nil(created_file, "File should have been created")

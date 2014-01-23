@@ -79,6 +79,10 @@ module PogoPlug
       create_file(device_id, service_id, File.new(name: directory_name, parent_id: parent_id, type: File::Type::DIRECTORY))
     end
 
+    def create_file(device_id, service_id, file_name, parent_id, io=nil)
+      create_file(device_id, service_id, File.new(name: file_name, parent_id: parent_id, type: File::Type::FILE), io)
+    end
+
     # Creates a file handle and optionally attach an io.
     # The provided file argument is expected to contain at minimum
     # a name, type and parent_id. If it has a mimetype that will be assumed to
