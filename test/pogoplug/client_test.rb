@@ -201,13 +201,14 @@ module PogoPlug
         should "move a directory to the root" do
           parent_directory = @client.files(@device.id, @device.services.first.id).files.select { |file| file.directory? }.first
           directory = @client.create_directory(@device.id, @device.services.first.id, @child_directory_name, parent_directory.id)
-          assert_not_nil(@client.move(@device.id, @device.services.first.id, directory, 0), "Directory was not moved to the root")
+          #(device_id, service_id, orig_file_name, file_id, parent_directory_id, file_name=nil)
+          assert_not_nil(@client.move(@device.id, @device.services.first.id, directory.name, directory.id, 0), "Directory was not moved to the root")
         end
 
         should "move a directory" do
           parent_directory = @client.create_directory(@device.id, @device.services.first.id, @directory_name)
           directory = @client.create_directory(@device.id, @device.services.first.id, @child_directory_name, 0)
-          assert_not_nil(@client.move(@device.id, @device.services.first.id, directory, parent_directory.id), "Directory was not moved")
+          assert_not_nil(@client.move(@device.id, @device.services.first.id, directory.name, directory.id, parent_directory.id), "Directory was not moved")
         end
 
         should "move a file" do
@@ -219,7 +220,7 @@ module PogoPlug
           assert_not_nil(created_file)
           assert_equal(test_file.size, created_file.size)
 
-          assert_not_nil(@client.move(@device.id, @device.services.first.id, created_file, directory.id), "File was not moved")
+          assert_not_nil(@client.move(@device.id, @device.services.first.id, created_file.name, created_file.id, directory.id), "File was not moved")
         end
 
         should "raise a DuplicateNameError when attempting to move a file to a directory containing a file of the same name" do
@@ -234,7 +235,7 @@ module PogoPlug
               headers: { "Content-Type" => "application/x-javascript;charset=utf-8" }
             )
           assert_raise(PogoPlug::DuplicateNameError, "DuplicateNameError should have been raised") do
-            @client.move(@device.id, @device.services.first.id, file, nil)
+            @client.move(@device.id, @device.services.first.id, file.name, file.id, nil)
           end
         end
       end

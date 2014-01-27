@@ -100,11 +100,11 @@ module PogoPlug
       file_handle
     end
 
-    def move(device_id, service_id, file, parent_directory_id, file_name=nil)
-      file_name ||= file.name
+    def move(device_id, service_id, orig_file_name, file_id, parent_directory_id, file_name=nil)
+      file_name ||= orig_file_name
       response = self.class.get('/moveFile', query: {
         valtoken: @token, deviceid: device_id, serviceid: service_id,
-        fileid: file.id, parentid: parent_directory_id, filename: file_name })
+        fileid: file_id, parentid: parent_directory_id, filename: file_name })
       raise_errors(response)
       File.from_json(response.parsed_response['file'])
     end
