@@ -288,7 +288,7 @@ module PogoPlug
         end
       end
 
-      context "#search_file_by_name" do
+      context "#search_file" do
         setup do
           @client.login(@username, @password)
           @device = @client.devices.first
@@ -301,7 +301,7 @@ module PogoPlug
 
           child_directory_name = "My test child directory name #{SecureRandom.uuid}"
           child_directory = @client.create_entity(@device.id, @device.services.first.id, File.new(name: child_directory_name, type: File::Type::DIRECTORY, parent_id: parent_directory.id))
-          assert_equal(@client.search_file_by_name(@device.id, @service.id, child_directory_name).parent_id, child_directory.parent_id)
+          assert_equal(@client.search_file(@device.id, @service.id, "name=\"#{child_directory_name}\"").id, child_directory.id)
         end
       end
 

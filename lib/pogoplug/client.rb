@@ -134,9 +134,9 @@ module PogoPlug
       true unless response.code.to_s != '200'
     end
 
-    #returns the first file or directory that matches the name given
-    def search_file_by_name(device_id, service_id, name)
-      params = { valtoken: @token, deviceid: device_id, serviceid: service_id, searchcrit: "name=\"#{name}\""}
+    #returns the first file or directory that matches the given criteria
+    def search_file(device_id, service_id, criteria)
+      params = { valtoken: @token, deviceid: device_id, serviceid: service_id, searchcrit: criteria}
       response = self.class.get('/searchFiles', query: params)
       raise_errors(response)
       File.from_json(response.parsed_response['files'][0])
