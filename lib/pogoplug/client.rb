@@ -129,7 +129,7 @@ module PogoPlug
     end
 
     def delete(device_id, service_id, file_id)
-      params = { valtoken: @token, deviceid: device_id, serviceid: service_id, fileid: file_id }
+      params = { valtoken: @token, deviceid: device_id, serviceid: service_id, fileid: file_id, recurse: '1' }
       response = self.class.get('/removeFile', query: params)
       true unless response.code.to_s != '200'
     end
