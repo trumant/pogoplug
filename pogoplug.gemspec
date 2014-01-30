@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Travis Truman"]
-  s.date = "2013-12-19"
+  s.date = "2014-01-30"
   s.description = ""
   s.email = "trumant@gmail.com"
   s.extra_rdoc_files = [
@@ -19,7 +19,8 @@ Gem::Specification.new do |s|
   ]
   s.files = [
     ".document",
-    ".rvmrc",
+    ".ruby-gemset",
+    ".ruby-version",
     ".travis.yml",
     "Gemfile",
     "Gemfile.lock",
@@ -30,10 +31,9 @@ Gem::Specification.new do |s|
     "VERSION",
     "lib/pogoplug.rb",
     "lib/pogoplug/api_version.rb",
-    "lib/pogoplug/authentication_error.rb",
     "lib/pogoplug/client.rb",
     "lib/pogoplug/device.rb",
-    "lib/pogoplug/duplicate_name_error.rb",
+    "lib/pogoplug/errors.rb",
     "lib/pogoplug/file.rb",
     "lib/pogoplug/file_listing.rb",
     "lib/pogoplug/hash_initializer.rb",
