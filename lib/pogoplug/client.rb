@@ -18,7 +18,7 @@ module PogoPlug
 
     # Retrieve the current version information of the service
     def version
-      response = self.class.get('/getVersion')
+      response = get('/getVersion')
       json = JSON.parse(response.body)
       ApiVersion.new(json['version'], json['builddate'])
     end
@@ -27,8 +27,7 @@ module PogoPlug
     # * *Raises* :
     #   - +AuthenticationError+ -> if PogoPlug does not like the credentials you provided
     def login(email, password)
-      response = self.class.get('/loginUser', query: { email: email, password: password })
-      raise_errors(response)
+      response = get('/loginUser', query: { email: email, password: password })
       @token = response.parsed_response["valtoken"]
       return self
     end
@@ -36,7 +35,7 @@ module PogoPlug
     # Retrieve a list of devices that are registered with the PogoPlug account
     def devices
       validate_token
-      response = self.class.get('/listDevices', query: { valtoken: @token })
+      response = get('/listDevices', query: { valtoken: @token })
       devices = []
       response.parsed_response['devices'].each do |d|
         devices << Device.from_json(d)
@@ -50,7 +49,7 @@ module PogoPlug
       params = { valtoken: @token, shared: shared }
       params[:deviceid] = device_id unless device_id.nil?
 
-      response = self.class.get('/listServices', query: params)
+      response = get('/listServices', query: params)
       services = []
       response.parsed_response['services'].each do |s|
         services << Service.from_json(s)
@@ -63,15 +62,14 @@ module PogoPlug
       params = { valtoken: @token, deviceid: device_id, serviceid: service_id, pageoffset: offset }
       params[:parentid] = parent_id unless parent_id.nil?
 
-      response = self.class.get('/listFiles', query: params)
+      response = get('/listFiles', query: params)
       FileListing.from_json(response.parsed_response)
     end
 
     # Retrieve a single file or directory
     def file(device_id, service_id, file_id)
       params = { valtoken: @token, deviceid: device_id, serviceid: service_id, fileid: file_id }
-      response = self.class.get('/getFile', query: params)
-      raise_errors(response)
+      response = get('/getFile', query: params)
       File.from_json(response.parsed_response['file'])
     end
 
@@ -90,8 +88,7 @@ module PogoPlug
     def create_entity(device_id, service_id, file, io=nil)
       params = { valtoken: @token, deviceid: device_id, serviceid: service_id, filename: file.name, type: file.type }
       params[:parentid] = file.parent_id unless file.parent_id.nil?
-      response = self.class.get('/createFile', query: params)
-      raise_errors(response)
+      response = get('/createFile', query: params)
       file_handle = File.from_json(response.parsed_response['file'])
       if io
         send_file(device_id, service_id, file_handle, io)
@@ -102,10 +99,9 @@ module PogoPlug
 
     def move(device_id, service_id, orig_file_name, file_id, parent_directory_id, file_name=nil)
       file_name ||= orig_file_name
-      response = self.class.get('/moveFile', query: {
+      response = get('/moveFile', query: {
         valtoken: @token, deviceid: device_id, serviceid: service_id,
         fileid: file_id, parentid: parent_directory_id, filename: file_name })
-      raise_errors(response)
       File.from_json(response.parsed_response['file'])
     end
 
@@ -116,33 +112,38 @@ module PogoPlug
 
     def download_to(device_id, service_id, file, destination)
       raise "Directories cannot be downloaded" unless file.file?
-      target = ::File.open(destination, "w")
-      begin
+      ::File.open(destination, "w") do |target|
         IO.copy_stream(
           open(URI.escape("#{files_url}/#{@token}/#{device_id}/#{service_id}/#{file.id}/dl/#{file.name}")),
           target
         )
-      ensure
-        target.close
       end
       target
     end
 
     def delete(device_id, service_id, file_id)
       params = { valtoken: @token, deviceid: device_id, serviceid: service_id, fileid: file_id, recurse: '1' }
-      response = self.class.get('/removeFile', query: params)
+      response = get('/removeFile', query: params)
       true unless response.code.to_s != '200'
     end
 
     #returns the first file or directory that matches the given criteria
     def search_file(device_id, service_id, criteria)
       params = { valtoken: @token, deviceid: device_id, serviceid: service_id, searchcrit: criteria}
-      response = self.class.get('/searchFiles', query: params)
-      raise_errors(response)
+      response = get('/searchFiles', query: params)
       File.from_json(response.parsed_response['files'][0])
     end
 
     private
+
+    def get( *args )
+      response = self.class.get(*args)
+      raise_errors(response)
+      unless response.ok?
+        raise ServiceError.new(response)
+      end
+      response
+    end
 
     def files_url
       "#{api_domain}svc/files"

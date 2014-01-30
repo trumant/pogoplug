@@ -9,7 +9,7 @@ module PogoPlug
 
     context "Client" do
       setup do
-        @client = PogoPlug::Client.new(API_HOST, true)
+        @client = PogoPlug::Client.new(API_HOST, false)
         @username = "gem_test_user@mailinator.com"
         @password = "p@ssw0rd"
       end
@@ -175,9 +175,9 @@ module PogoPlug
           child_directory_name = "My test child directory"
           child_directory = @client.create_entity(@device.id, @device.services.first.id, File.new(name: child_directory_name, type: File::Type::DIRECTORY, parent_id: parent_directory.id))
 
-          assert_true(@client.delete(@device.id, @device.services.first, parent_directory.id), "Test directory was not deleted")
+          assert_true(@client.delete(@device.id, @device.services.first.id, parent_directory.id), "Test directory was not deleted")
 
-          deleted_directory = @client.files(@device.id, @device.services.first).files.select { |file| file.directory? && file.name == parent_directory_name }.first
+          deleted_directory = @client.files(@device.id, @device.services.first.id).files.select { |file| file.directory? && file.name == parent_directory_name }.first
           assert_nil(deleted_directory, "Test directory that was supposed to have been deleted is still returned")
         end
 
