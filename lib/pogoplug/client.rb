@@ -118,7 +118,6 @@ module PogoPlug
           target
         )
       end
-      target
     end
 
     def delete(device_id, service_id, file_id)
