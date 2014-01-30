@@ -174,7 +174,7 @@ module PogoPlug
       req['Content-Length'] = io.size
       req['Content-Type'] = file_handle.mimetype
       req.body_stream = io
-      put_response = Net::HTTP.new(uri.host, uri.port).request(req)
+      Net::HTTP.new(uri.host, uri.port).request(req)
     end
   end
 end
