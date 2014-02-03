@@ -73,20 +73,20 @@ module PogoPlug
       File.from_json(response.parsed_response['file'])
     end
 
-    def create_directory(device_id, service_id, directory_name, parent_id=nil)
-      create_entity(device_id, service_id, File.new(name: directory_name, parent_id: parent_id, type: File::Type::DIRECTORY))
+    def create_directory(device_id, service_id, directory_name, parent_id=nil, properties = {})
+      create_entity(device_id, service_id, File.create_directory(directory_name, parent_id), nil, properties)
     end
 
-    def create_file(device_id, service_id, file_name, parent_id, io=nil)
-      create_entity(device_id, service_id, File.new(name: file_name, parent_id: parent_id, type: File::Type::FILE), io)
+    def create_file(device_id, service_id, file_name, parent_id, io, properties = {} )
+      create_entity(device_id, service_id, File.create_file(file_name, parent_id), io, properties)
     end
 
     # Creates a file handle and optionally attach an io.
     # The provided file argument is expected to contain at minimum
     # a name, type and parent_id. If it has a mimetype that will be assumed to
     # match the mimetype of the io.
-    def create_entity(device_id, service_id, file, io=nil)
-      params = { valtoken: @token, deviceid: device_id, serviceid: service_id, filename: file.name, type: file.type }
+    def create_entity(device_id, service_id, file, io=nil, properties = {})
+      params = { valtoken: @token, deviceid: device_id, serviceid: service_id, filename: file.name, type: file.type }.merge(properties)
       params[:parentid] = file.parent_id unless file.parent_id.nil?
       response = get('/createFile', query: params)
       file_handle = File.from_json(response.parsed_response['file'])
