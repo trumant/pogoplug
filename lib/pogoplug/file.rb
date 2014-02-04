@@ -1,6 +1,6 @@
 module PogoPlug
   class File
-    attr_accessor :name, :id, :type, :size, :mimetype, :parent_id, :raw
+    attr_accessor :name, :id, :type, :size, :mimetype, :parent_id, :properties, :raw
 
     module Type
       FILE = 0
@@ -21,6 +21,10 @@ module PogoPlug
 
     def size
       @size || 0
+    end
+
+    def originid
+      properties && properties['originid']
     end
 
     def self.create_directory( name, parent_id )

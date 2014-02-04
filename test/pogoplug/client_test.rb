@@ -98,7 +98,7 @@ module PogoPlug
         setup do
           @client.login(@username, @password)
           @device = @client.devices.first
-          @directory_name = "My Test Directory #{SecureRandom.uuid}"
+          @directory_name = "my-test-directory-#{SecureRandom.uuid}"
           @child_directory_name = "My Test Child Directory #{SecureRandom.uuid}"
         end
 
@@ -118,19 +118,20 @@ module PogoPlug
           assert_equal(directory.parent_id, parent_directory.id, "Directory should be under the correct parent")
           assert_true(directory.directory?, "Directory should be a directory")
         end
+
       end
 
       context "#create_file" do
         setup do
           @client.login(@username, @password)
           @device = @client.devices.first
-          @file_name = "My test file #{SecureRandom.uuid}"
+          @file_name = "my-test-file-#{SecureRandom.uuid}"
           @parent_directory = @client.files(@device.id, @device.services.first.id).files.select { |file| file.directory? }.first
           @file_to_create = File.new(name: @file_name, type: File::Type::FILE, parent_id: @parent_directory.id)
         end
 
         should "create a file object when the create_file method is called" do
-          created_file = @client.create_file(@device.id, @device.services.first.id, @file_name, @parent_directory.id)
+          created_file = @client.create_file(@device.id, @device.services.first.id, @file_name, @parent_directory.id, StringIO.new("some content"))
           assert_not_nil(created_file, "File should have been created")
           assert_equal(@file_name, created_file.name)
           assert_equal(@file_to_create.type, created_file.type)
