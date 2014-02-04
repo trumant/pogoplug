@@ -1,6 +1,6 @@
 module PogoPlug
   class File
-    attr_accessor :name, :id, :type, :size, :mimetype, :parent_id, :properties, :raw
+    attr_accessor :name, :id, :type, :size, :mimetype, :parent_id, :properties, :origin, :raw
 
     module Type
       FILE = 0
@@ -43,6 +43,7 @@ module PogoPlug
         mimetype: json['mimetype'],
         parent_id: json['parentid'],
         size: json['size'].to_i,
+        origin: json['origin'],
         raw: json
       )
     end
