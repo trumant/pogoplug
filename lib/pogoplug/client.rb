@@ -134,9 +134,15 @@ module PogoPlug
 
     #returns the first file or directory that matches the given criteria
     def search_file(device_id, service_id, criteria)
+      search(device_id, service_id, criteria)[0]
+    end
+
+    def search( device_id, service_id, criteria )
       params = { valtoken: @token, deviceid: device_id, serviceid: service_id, searchcrit: criteria}
       response = get('/searchFiles', query: params)
-      File.from_json(response.parsed_response['files'][0])
+      response.parsed_response['files'].map do |file|
+        File.from_json(file)
+      end
     end
 
     private
