@@ -6,11 +6,11 @@ module PogoPlug
       setup do
         @size = 2
         @offset = 0
-        @file_listing = FileListing.new(size: @size, offset: @offset, total_count: @size)
+        @file_listing = FileListing.new(offset: @offset, total_count: @size)
       end
 
       should "provide the number of files in the listing" do
-        assert_equal(@size, @file_listing.size)
+        assert_equal(@size, @file_listing.total_count)
       end
 
       context "from_json" do

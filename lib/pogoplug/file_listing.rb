@@ -6,7 +6,7 @@ module PogoPlug
     include Enumerable
     extend Forwardable
 
-    def_delegators :@files, :each, :[], :size, :empty?
+    def_delegators :files, :each, :[], :size, :empty?, :first, :last
     attr_accessor :offset, :total_count, :files
 
     def files
