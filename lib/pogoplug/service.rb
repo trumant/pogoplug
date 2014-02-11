@@ -2,10 +2,17 @@ module PogoPlug
   class Service
     include HashInitializer
 
-    attr_accessor :name, :id, :api_url
+    attr_accessor :name, :id, :api_url, :online, :service_type, :raw
 
     def self.from_json(json)
-      Service.new(name: json['name'], id: json['serviceid'], api_url: json['apiurl'])
+      Service.new(
+        name: json['name'],
+        id: json['serviceid'],
+        api_url: json['apiurl'],
+        online: json['online'] == '1',
+        service_type: json['type'],
+        raw: json
+      )
     end
   end
 end
