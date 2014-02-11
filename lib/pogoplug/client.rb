@@ -43,6 +43,12 @@ module PogoPlug
       devices
     end
 
+    def online_devices
+      devices.select do |device|
+        device.services.find { |service| service.online? }
+      end
+    end
+
     # Retrieve a list of services
     def services(device_id=nil, shared=false)
       validate_token

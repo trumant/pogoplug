@@ -4,6 +4,10 @@ module PogoPlug
 
     attr_accessor :name, :id, :api_url, :online, :service_type, :raw
 
+    def online?
+      self.online
+    end
+
     def self.from_json(json)
       Service.new(
         name: json['name'],
