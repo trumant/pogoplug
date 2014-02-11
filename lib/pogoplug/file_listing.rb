@@ -1,20 +1,20 @@
+require 'forwardable'
+
 module PogoPlug
   class FileListing
     include HashInitializer
+    include Enumerable
+    extend Forwardable
 
-    attr_accessor :size, :offset, :total_count, :files
+    def_delegators :@files, :each, :[], :size, :empty?
+    attr_accessor :offset, :total_count, :files
 
     def files
       @files ||= Array.new
     end
 
-    def empty?
-      files.empty?
-    end
-
     def self.from_json(json)
       listing = FileListing.new(
-        size: json['count'].to_i,
         offset: json['pageoffset'].to_i,
         total_count: json['totalcount'].to_i
       )

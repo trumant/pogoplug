@@ -137,12 +137,10 @@ module PogoPlug
       search(device_id, service_id, criteria)[0]
     end
 
-    def search( device_id, service_id, criteria )
-      params = { valtoken: @token, deviceid: device_id, serviceid: service_id, searchcrit: criteria}
+    def search( device_id, service_id, criteria, options = {} )
+      params = { valtoken: @token, deviceid: device_id, serviceid: service_id, searchcrit: criteria}.merge(options)
       response = get('/searchFiles', query: params)
-      response.parsed_response['files'].map do |file|
-        File.from_json(file)
-      end
+      PogoPlug::FileListing.from_json(response.parsed_response)
     end
 
     private
