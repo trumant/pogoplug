@@ -11,10 +11,14 @@ GEM
     atomic (1.1.12)
     builder (3.2.2)
     coderay (1.0.9)
-    crack (0.4.1)
-      safe_yaml (~> 0.9.0)
-    faraday (0.8.8)
+    crack (0.4.2)
+      safe_yaml (~> 1.0.0)
+    faraday (0.8.9)
       multipart-post (~> 1.2.0)
+    faraday_curl (0.0.1)
+      faraday (>= 0.8.9)
+    faraday_middleware (0.9.0)
+      faraday (>= 0.7.4, < 0.9)
     ffi (1.9.0)
     formatador (0.2.4)
     git (1.2.5)
@@ -39,9 +43,6 @@ GEM
       test-unit (~> 2.2)
     hashie (2.0.5)
     highline (1.6.19)
-    httparty (0.11.0)
-      multi_json (~> 1.0)
-      multi_xml (>= 0.5.2)
     httpauth (0.2.0)
     i18n (0.6.4)
     jeweler (1.8.6)
@@ -91,7 +92,7 @@ GEM
     rdoc (3.12.2)
       json (~> 1.4)
     ruby_gntp (0.3.4)
-    safe_yaml (0.9.7)
+    safe_yaml (1.0.1)
     shoulda (3.5.0)
       shoulda-context (~> 1.0, >= 1.0.1)
       shoulda-matchers (>= 1.4.1, < 3.0)
@@ -108,7 +109,7 @@ GEM
     thread_safe (0.1.2)
       atomic
     tzinfo (0.3.37)
-    webmock (1.16.1)
+    webmock (1.17.4)
       addressable (>= 2.2.7)
       crack (>= 0.3.2)
 
@@ -117,10 +118,12 @@ PLATFORMS
 
 DEPENDENCIES
   bundler (~> 1.3)
+  faraday (= 0.8.9)
+  faraday_curl
+  faraday_middleware
   guard
   guard-bundler
   guard-test
-  httparty (~> 0.11.0)
   jeweler (~> 1.8.4)
   mocha
   rake

@@ -1,43 +1,37 @@
-require 'httparty'
-require 'json'
 require 'open-uri'
+require 'pogoplug/http_helper'
 
 module PogoPlug
   class Client
-    include HTTParty
-    format :json
+
     attr_accessor :token, :api_domain
 
-    def initialize(api_domain="https://service.pogoplug.com/", debug_logging=false)
+    def initialize( api_domain = "https://service.pogoplug.com/", logger = nil )
       @api_domain = api_domain
-      self.class.base_uri "#{api_domain}svc/api/json"
-      if debug_logging
-        self.class.debug_output $stdout
-      end
+      @logger = logger
     end
 
     # Retrieve the current version information of the service
     def version
-      response = get('/getVersion')
-      json = JSON.parse(response.body)
-      ApiVersion.new(json['version'], json['builddate'])
+      response = get('/getVersion', {}, false )
+      ApiVersion.new(response.body['version'], response.body['builddate'])
     end
 
     # Retrieve an auth token that can be used to make additional calls
     # * *Raises* :
     #   - +AuthenticationError+ -> if PogoPlug does not like the credentials you provided
     def login(email, password)
-      response = get('/loginUser', query: { email: email, password: password })
-      @token = response.parsed_response["valtoken"]
+      response = get('/loginUser', {email: email, password: password }, false)
+      @token = response.body["valtoken"]
       return self
     end
 
     # Retrieve a list of devices that are registered with the PogoPlug account
     def devices
       validate_token
-      response = get('/listDevices', query: { valtoken: @token })
+      response = get('/listDevices')
       devices = []
-      response.parsed_response['devices'].each do |d|
+      response.body['devices'].each do |d|
         devices << Device.from_json(d)
       end
       devices
@@ -51,13 +45,12 @@ module PogoPlug
 
     # Retrieve a list of services
     def services(device_id=nil, shared=false)
-      validate_token
-      params = { valtoken: @token, shared: shared }
+      params = { shared: shared }
       params[:deviceid] = device_id unless device_id.nil?
 
-      response = get('/listServices', query: params)
+      response = get('/listServices', params)
       services = []
-      response.parsed_response['services'].each do |s|
+      response.body['services'].each do |s|
         services << Service.from_json(s)
       end
       services
@@ -65,18 +58,18 @@ module PogoPlug
 
     # Retrieve a list of files for a device and service
     def files(device_id, service_id, parent_id=nil, offset=0)
-      params = { valtoken: @token, deviceid: device_id, serviceid: service_id, pageoffset: offset }
+      params = { deviceid: device_id, serviceid: service_id, pageoffset: offset }
       params[:parentid] = parent_id unless parent_id.nil?
 
-      response = get('/listFiles', query: params)
-      FileListing.from_json(response.parsed_response)
+      response = get('/listFiles', params)
+      FileListing.from_json(response.body)
     end
 
     # Retrieve a single file or directory
     def file(device_id, service_id, file_id)
-      params = { valtoken: @token, deviceid: device_id, serviceid: service_id, fileid: file_id }
-      response = get('/getFile', query: params)
-      File.from_json(response.parsed_response['file'])
+      params = { deviceid: device_id, serviceid: service_id, fileid: file_id }
+      response = get('/getFile', params)
+      File.from_json(response.body['file'])
     end
 
     def create_directory(device_id, service_id, directory_name, parent_id=nil, properties = {})
@@ -92,10 +85,10 @@ module PogoPlug
     # a name, type and parent_id. If it has a mimetype that will be assumed to
     # match the mimetype of the io.
     def create_entity(device_id, service_id, file, io=nil, properties = {})
-      params = { valtoken: @token, deviceid: device_id, serviceid: service_id, filename: file.name, type: file.type }.merge(properties)
+      params = { deviceid: device_id, serviceid: service_id, filename: file.name, type: file.type }.merge(properties)
       params[:parentid] = file.parent_id unless file.parent_id.nil?
-      response = get('/createFile', query: params)
-      file_handle = File.from_json(response.parsed_response['file'])
+      response = get('/createFile', params)
+      file_handle = File.from_json(response.body['file'])
       if io
         send_file(device_id, service_id, file_handle, io)
         file_handle.size = io.size
@@ -105,10 +98,9 @@ module PogoPlug
 
     def move(device_id, service_id, orig_file_name, file_id, parent_directory_id, file_name=nil)
       file_name ||= orig_file_name
-      response = get('/moveFile', query: {
-        valtoken: @token, deviceid: device_id, serviceid: service_id,
-        fileid: file_id, parentid: parent_directory_id, filename: file_name })
-      File.from_json(response.parsed_response['file'])
+      response = get('/moveFile', deviceid: device_id, serviceid: service_id,
+        fileid: file_id, parentid: parent_directory_id, filename: file_name)
+      File.from_json(response.body['file'])
     end
 
     def download(device_id, service, file)
@@ -127,9 +119,9 @@ module PogoPlug
     end
 
     def delete(device_id, service_id, file_id)
-      params = { valtoken: @token, deviceid: device_id, serviceid: service_id, fileid: file_id, recurse: '1' }
-      response = get('/removeFile', query: params)
-      true unless response.code.to_s != '200'
+      params = { deviceid: device_id, serviceid: service_id, fileid: file_id, recurse: '1' }
+      response = get('/removeFile', params)
+      true unless response.status.to_s != '200'
     end
 
     #returns the first file or directory that matches the given criteria
@@ -138,17 +130,24 @@ module PogoPlug
     end
 
     def search( device_id, service_id, criteria, options = {} )
-      params = { valtoken: @token, deviceid: device_id, serviceid: service_id, searchcrit: criteria}.merge(options)
-      response = get('/searchFiles', query: params)
-      PogoPlug::FileListing.from_json(response.parsed_response)
+      params = { deviceid: device_id, serviceid: service_id, searchcrit: criteria}.merge(options)
+      response = get('/searchFiles', params)
+      PogoPlug::FileListing.from_json(response.body)
     end
 
     private
 
-    def get( *args )
-      response = self.class.get(*args)
-      raise_errors(response)
-      unless response.ok?
+    def get( url, params = {}, should_validate_token = true )
+      validate_token if should_validate_token
+
+      headers = {}
+      if @token
+        headers["cookie"] = "valtoken=#{@token}"
+      end
+
+      response = ::PogoPlug::HttpHelper.create(@api_domain, @logger).get("svc/api#{url}", params, headers)
+      raise_errors(response.body)
+      unless response.success?
         raise ServiceError.new(response)
       end
       response
@@ -164,8 +163,8 @@ module PogoPlug
       end
     end
 
-    def raise_errors(response)
-      error_code = response.parsed_response['HB-EXCEPTION']['ecode'] if response.parsed_response['HB-EXCEPTION']
+    def raise_errors(body)
+      error_code = body['HB-EXCEPTION']['ecode'] if body['HB-EXCEPTION']
       case error_code
       when 606
         raise AuthenticationError

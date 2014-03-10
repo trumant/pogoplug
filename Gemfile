@@ -15,4 +15,6 @@ group :development, :test do
   gem "mocha", :require => false
 end
 
-gem "httparty", "~> 0.11.0"
+gem 'faraday', '0.8.9'
+gem 'faraday_middleware'
+gem 'faraday_curl'

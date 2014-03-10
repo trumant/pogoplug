@@ -9,7 +9,7 @@ module PogoPlug
 
     context "Client" do
       setup do
-        @client = PogoPlug::Client.new(API_HOST, false)
+        @client = PogoPlug::Client.new(API_HOST)
         @username = "gem_test_user@mailinator.com"
         @password = "p@ssw0rd"
       end
