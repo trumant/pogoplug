@@ -4,7 +4,7 @@ require 'pogoplug/http_helper'
 module PogoPlug
   class Client
 
-    attr_accessor :token, :api_domain
+    attr_accessor :token, :api_domain, :logger
 
     def initialize( api_domain = "https://service.pogoplug.com/", logger = nil )
       @api_domain = api_domain
@@ -23,16 +23,14 @@ module PogoPlug
     def login(email, password)
       response = get('/loginUser', {email: email, password: password }, false)
       @token = response.body["valtoken"]
-      return self
     end
 
     # Retrieve a list of devices that are registered with the PogoPlug account
     def devices
-      validate_token
       response = get('/listDevices')
       devices = []
       response.body['devices'].each do |d|
-        devices << Device.from_json(d)
+        devices << Device.from_json(d, @token, @logger)
       end
       devices
     end
@@ -51,7 +49,7 @@ module PogoPlug
       response = get('/listServices', params)
       services = []
       response.body['services'].each do |s|
-        services << Service.from_json(s)
+        services << Service.from_json(s, @token, @logger)
       end
       services
     end
@@ -90,7 +88,7 @@ module PogoPlug
       response = get('/createFile', params)
       file_handle = File.from_json(response.body['file'])
       if io
-        send_file(device_id, service_id, file_handle, io)
+        HttpHelper.send(files_url, @token, device_id, service_id, file_handle, io )
         file_handle.size = io.size
       end
       file_handle
@@ -146,10 +144,8 @@ module PogoPlug
       end
 
       response = ::PogoPlug::HttpHelper.create(@api_domain, @logger).get("svc/api#{url}", params, headers)
-      raise_errors(response.body)
-      unless response.success?
-        raise ServiceError.new(response)
-      end
+      ::PogoPlug::HttpHelper.raise_errors(response)
+
       response
     end
 
@@ -163,27 +159,5 @@ module PogoPlug
       end
     end
 
-    def raise_errors(body)
-      error_code = body['HB-EXCEPTION']['ecode'] if body['HB-EXCEPTION']
-      case error_code
-      when 606
-        raise AuthenticationError
-      when 808
-        raise DuplicateNameError
-      when 804
-        raise NotFoundError
-      else
-      end
-    end
-
-    def send_file(device_id, service_id, file_handle, io)
-      parent = file_handle.id || 0
-      uri = URI.parse("#{files_url}/#{@token}/#{device_id}/#{service_id}/#{parent}/#{file_handle.name}")
-      req = Net::HTTP::Put.new(uri.path)
-      req['Content-Length'] = io.size
-      req['Content-Type'] = file_handle.mimetype
-      req.body_stream = io
-      Net::HTTP.new(uri.host, uri.port).request(req)
-    end
   end
 end

@@ -1,4 +1,5 @@
 require_relative 'helper'
+
 module PogoPlug
   class FileTest < Test::Unit::TestCase
     context "File" do
