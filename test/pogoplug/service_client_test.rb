@@ -19,7 +19,6 @@ module PogoPlug
     context 'service client' do
 
       setup do
-        WebMock.allow_net_connect!
         client = PogoPlug::Client.new("https://service.pogoplug.com/")
         @username = "gem_test_user@mailinator.com"
         @password = "p@ssw0rd"
@@ -197,7 +196,7 @@ module PogoPlug
 
         destination =  @client.create_directory(other_folder, @parent.id)
 
-        move_result = @client.move(result.id, destination.id, result.name)
+        @client.move(result.id, destination.id, result.name)
 
         moved = @client.find_by_name!(result.name, destination.id)
 
@@ -206,6 +205,22 @@ module PogoPlug
           moved.id)
         assert_nil(@client.find_by_name( name, @parent.id ))
         assert_equal(CONTENT, @client.download(moved))
+      end
+
+      should "delete an item by it's name" do
+        name = "file.txt"
+
+        result = ::File.open(PATH) do |f|
+          @client.create_file(name, @parent.id, f)
+        end
+
+        @client.delete_by_name(name, @parent.id)
+
+        assert_nil(@client.find_by_id(result.id))
+      end
+
+      should "not do anything if trying to delete a file that does not exist" do
+        assert_nil(@client.delete_by_name("file.txt", @parent.id))
       end
 
     end

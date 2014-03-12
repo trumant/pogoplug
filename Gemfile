@@ -11,7 +11,6 @@ group :development, :test do
   gem "guard-bundler"
   gem "guard-test"
   gem "ruby_gntp"
-  gem "webmock"
   gem "mocha", :require => false
 end
 

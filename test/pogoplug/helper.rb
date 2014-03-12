@@ -19,7 +19,5 @@ SimpleCov.start
 
 require 'pogoplug'
 
-require 'webmock/test_unit'
-
 class Test::Unit::TestCase
 end

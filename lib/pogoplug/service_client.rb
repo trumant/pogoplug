@@ -112,8 +112,18 @@ module PogoPlug
       end
     end
 
-    def delete(file_id)
-      get('/removeFile', deviceid: @device_id, serviceid: @service_id, fileid: file_id, recurse: '1')
+    def delete(file_id, recursive = true)
+      options = {deviceid: @device_id, serviceid: @service_id, fileid: file_id}
+      if recursive
+        options[:recurse] = '1'
+      end
+      get('/removeFile', options)
+    end
+
+    def delete_by_name( file_id, parent_id = nil, recursive = true )
+      if file = find_by_name(file_id, parent_id)
+        delete(file.id, recursive)
+      end
     end
 
     def delete_if_exists(file_id)

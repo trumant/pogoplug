@@ -71,7 +71,7 @@ module PogoPlug
             ]
           }
         }
-        device = Device.from_json(JSON.parse(json))
+        device = Device.from_json(JSON.parse(json), "token", nil)
         assert_equal("Pogoplug Cloud", device.name)
         assert_equal("XCLDGAAAHE5B5NKDKMUXJ52F9J", device.id)
         assert_equal(1, device.services.size, "Expected 1 service")

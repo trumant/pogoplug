@@ -36,7 +36,7 @@ module PogoPlug
             "metaver": "0"
           }
         }
-        service = Service.from_json(JSON.parse(json))
+        service = Service.from_json(JSON.parse(json), "token", nil)
         assert_equal("XCLDGAAAHE5B5NKDKMUXJ52F9J", service.id)
         assert_equal("Pogoplug Cloud", service.name)
         assert_equal("https://cl0c0.pogoplug.com/svc/api/", service.api_url)
