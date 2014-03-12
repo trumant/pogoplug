@@ -119,7 +119,7 @@ module PogoPlug
       if recursive
         options[:recurse] = '1'
       end
-      get('/removeFile', options)
+      get('/removeFile', options).success?
     end
 
     def delete_by_name( file_id, parent_id = nil, recursive = true )

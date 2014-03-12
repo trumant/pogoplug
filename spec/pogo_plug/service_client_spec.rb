@@ -32,7 +32,9 @@ describe PogoPlug::ServiceClient do
   end
 
   after do
-    @client.delete(@parent.id)
+    unless @parent_removed
+      @client.delete(@parent.id)
+    end
   end
 
   it "should create a directory" do
@@ -218,6 +220,11 @@ describe PogoPlug::ServiceClient do
 
   it "should not do anything if trying to delete a file that does not exist" do
     expect(@client.delete_by_name("file.txt", @parent.id)).to be_nil
+  end
+
+  it 'should delete the created top folder' do
+    @parent_removed = true
+    expect(@client.delete_by_name(@parent.name)).to be_true
   end
 
   it "should download a binary file correctly" do
