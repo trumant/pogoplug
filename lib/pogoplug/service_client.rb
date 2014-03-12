@@ -138,7 +138,7 @@ module PogoPlug
       FileListing.from_json(response.body)
     end
 
-    def files_from_parent(parent_id = '0', offset=0)
+    def list_files(parent_id = '0', offset=0)
       params = { deviceid: @device_id, serviceid: @service_id, pageoffset: offset, parentid: parent_id }
       response = get('/listFiles', params)
       FileListing.from_json(response.body)

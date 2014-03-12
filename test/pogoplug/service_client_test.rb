@@ -121,7 +121,7 @@ module PogoPlug
         @client.create_directory(first, @parent.id)
         @client.create_directory(second, @parent.id)
 
-        listing = @client.files_from_parent(@parent.id)
+        listing = @client.list_files(@parent.id)
 
         assert_true(!!listing.find { |f| f.name == first })
         assert_true(!!listing.find { |f| f.name == second })
