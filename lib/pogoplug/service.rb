@@ -11,7 +11,7 @@ module PogoPlug
     end
 
     def client
-      ServiceClient.new( token, api_url, device_id, id )
+      ServiceClient.new( token, api_url, device_id, id, logger )
     end
 
     def self.from_json(json, token, logger)
