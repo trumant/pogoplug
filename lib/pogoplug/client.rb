@@ -112,18 +112,12 @@ module PogoPlug
       @uri ||= URI(@api_domain)
     end
 
-    def build_uri(path, query_params = nil)
+    def build_uri(path, query_params)
       result = {
-        :host => uri.host,
-        :path => path
+        host: uri.host,
+        path: path,
+        query: query_params
       }
-
-      case query_params
-        when Hash
-          result[:query] = query_params.to_query
-        when String
-          result[:query] = query_params
-      end
 
       case uri.scheme
         when 'https'
