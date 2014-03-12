@@ -7,12 +7,13 @@ require 'pogoplug/errors'
 module PogoPlug
   class ServiceClient
 
-    def initialize(token, url, device_id, service_id)
+    def initialize(token, url, device_id, service_id, logger = nil)
       @token = token
       @url = url
       @uri = URI(@url)
       @device_id = device_id
       @service_id = service_id
+      @logger = logger
       raise ApiUrlNotAvailable.new("Client requires an api_url #{self.inspect}") if url.nil?
     end
 
