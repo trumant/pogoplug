@@ -1,4 +1,5 @@
 require 'forwardable'
+require 'pogoplug/hash_initializer'
 
 module PogoPlug
   class FileListing
@@ -13,6 +14,10 @@ module PogoPlug
       @files ||= Array.new
     end
 
+    def blank?
+      self.total_count == 0
+    end
+
     def self.from_json(json)
       listing = FileListing.new(
         offset: json['pageoffset'].to_i,
@@ -25,5 +30,6 @@ module PogoPlug
       end
       listing
     end
+
   end
 end
