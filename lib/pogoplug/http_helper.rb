@@ -35,8 +35,7 @@ module PogoPlug
     end
 
     def self.send_file( files_url, token, device_id, service_id, file_handle, io)
-      parent = file_handle.id || 0
-      uri = URI.parse("#{files_url}/#{token}/#{device_id}/#{service_id}/#{parent}/#{file_handle.name}")
+      uri = URI.parse("#{files_url}/#{token}/#{device_id}/#{service_id}/#{file_handle.id}")
       req = Net::HTTP::Put.new(uri.path)
       req['Content-Length'] = io.size
       req['Content-Type'] = file_handle.mimetype

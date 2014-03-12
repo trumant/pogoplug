@@ -1,3 +1,5 @@
+require 'pogoplug/hash_initializer'
+
 module PogoPlug
   class File
     attr_accessor :name, :id, :type, :size, :mimetype, :parent_id, :properties, :origin, :raw

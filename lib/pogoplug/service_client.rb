@@ -3,6 +3,7 @@ require 'pogoplug/file'
 require 'pogoplug/device'
 require 'pogoplug/service'
 require 'pogoplug/errors'
+require 'pogoplug/file_listing'
 
 module PogoPlug
   class ServiceClient

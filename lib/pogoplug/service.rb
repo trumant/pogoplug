@@ -1,3 +1,4 @@
+require 'pogoplug/hash_initializer'
 require 'pogoplug/service_client'
 
 module PogoPlug

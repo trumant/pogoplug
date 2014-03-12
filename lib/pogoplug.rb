@@ -1,5 +1,3 @@
-require 'rubygems'
-
 require 'pogoplug/version'
 require 'pogoplug/hash_initializer'
 require 'pogoplug/client'

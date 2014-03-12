@@ -1,5 +1,8 @@
 require 'open-uri'
+require 'pogoplug/api_version'
+require 'pogoplug/device'
 require 'pogoplug/http_helper'
+require 'pogoplug/service'
 
 module PogoPlug
   class Client

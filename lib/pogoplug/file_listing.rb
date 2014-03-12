@@ -1,4 +1,5 @@
 require 'forwardable'
+require 'pogoplug/hash_initializer'
 
 module PogoPlug
   class FileListing

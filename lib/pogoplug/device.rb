@@ -1,3 +1,6 @@
+require 'pogoplug/hash_initializer'
+require 'pogoplug/service'
+
 module PogoPlug
   class Device
     include HashInitializer
