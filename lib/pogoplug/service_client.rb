@@ -41,16 +41,40 @@ module PogoPlug
 
     def create_entity_if_needed(name, parent_id = nil, io = nil, properties = {})
       parent_id ||= '0'
-      files = search(%Q!name="#{name}" and parent_id="#{parent_id}"!)
-      if files.blank?
-        if io
-          create_file(name, parent_id, io, properties)
-        else
-          create_directory(name, parent_id, properties)
-        end
+      file = find_by_name(name, parent_id)
+      if file
+        create_entity(file, io)
+      elsif io
+        create_file(name, parent_id, io, properties)
       else
-        create_entity(files.first, io)
+        create_directory(name, parent_id, properties)
       end
+    end
+
+    def find_by_name(name, parent_id = nil)
+      criteria = %Q!name = "#{name}"!
+      if parent_id
+        criteria << %Q! and parentid = "#{parent_id}"!
+      end
+      search(criteria).first
+    end
+
+    def find_by_name!(name, parent_id = nil)
+      if result = find_by_name(name, parent_id)
+        result
+      else
+        raise NotFoundError.new("Could not find file with name [#{name}] and parent [#{parent_id}]")
+      end
+    end
+
+    def move(file_id, parent_id, file_name)
+      response = get('/moveFile',
+        deviceid: @device_id,
+        serviceid: @service_id,
+        fileid: file_id,
+        parentid: parent_id,
+        filename: file_name)
+      File.from_json(response.body['file'])
     end
 
     def create_directory(directory_name, parent_id=nil, properties = {})

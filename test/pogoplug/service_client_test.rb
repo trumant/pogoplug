@@ -170,6 +170,44 @@ module PogoPlug
         assert_equal(CONTENT_2, @client.download(result))
       end
 
+      should "rename the file inside the same folder" do
+        name = "file.txt"
+        other_name = "other_file.txt"
+
+        result = ::File.open(PATH) do |f|
+          @client.create_file(name, @parent.id, f)
+        end
+
+        @client.move(result.id, @parent.id, other_name)
+
+        moved = @client.find_by_name(other_name, @parent.id)
+
+        assert_equal(result.id, moved.id)
+        assert_nil(@client.find_by_name( name, @parent.id ))
+        assert_equal(CONTENT, @client.download(moved))
+      end
+
+      should "rename the file across folders" do
+        name = "file.txt"
+        other_folder = 'other folder'
+
+        result = ::File.open(PATH) do |f|
+          @client.create_file(name, @parent.id, f)
+        end
+
+        destination =  @client.create_directory(other_folder, @parent.id)
+
+        move_result = @client.move(result.id, destination.id, result.name)
+
+        moved = @client.find_by_name!(result.name, destination.id)
+
+        assert_equal(
+          result.id,
+          moved.id)
+        assert_nil(@client.find_by_name( name, @parent.id ))
+        assert_equal(CONTENT, @client.download(moved))
+      end
+
     end
 
   end
