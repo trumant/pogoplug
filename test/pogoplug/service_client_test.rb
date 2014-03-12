@@ -12,6 +12,8 @@ module PogoPlug
     PATH_2 = ::File.expand_path('../../test_file_2.txt', __FILE__)
     CONTENT_2 = IO.read(PATH_2)
 
+    PDF_PATH = ::File.expand_path('../../sample-file.pdf', __FILE__)
+
     def generate_name
       SecureRandom.hex
     end
@@ -182,7 +184,7 @@ module PogoPlug
         moved = @client.find_by_name(other_name, @parent.id)
 
         assert_equal(result.id, moved.id)
-        assert_nil(@client.find_by_name( name, @parent.id ))
+        assert_nil(@client.find_by_name(name, @parent.id))
         assert_equal(CONTENT, @client.download(moved))
       end
 
@@ -194,7 +196,7 @@ module PogoPlug
           @client.create_file(name, @parent.id, f)
         end
 
-        destination =  @client.create_directory(other_folder, @parent.id)
+        destination = @client.create_directory(other_folder, @parent.id)
 
         @client.move(result.id, destination.id, result.name)
 
@@ -203,7 +205,7 @@ module PogoPlug
         assert_equal(
           result.id,
           moved.id)
-        assert_nil(@client.find_by_name( name, @parent.id ))
+        assert_nil(@client.find_by_name(name, @parent.id))
         assert_equal(CONTENT, @client.download(moved))
       end
 
@@ -221,6 +223,17 @@ module PogoPlug
 
       should "not do anything if trying to delete a file that does not exist" do
         assert_nil(@client.delete_by_name("file.txt", @parent.id))
+      end
+
+      should "download a binary file correctly" do
+        name = 'something.pdf'
+        result = ::File.open(PDF_PATH) do |f|
+          @client.create_file(name, @parent.id, f)
+        end
+
+        destination = Tempfile.new("test")
+        @client.download_to(result, destination.path)
+        assert_equal(::File.stat(PDF_PATH).size, ::File.stat(destination.path).size)
       end
 
     end

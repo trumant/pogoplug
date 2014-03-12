@@ -94,7 +94,7 @@ module PogoPlug
     end
 
     def download_to(file, destination)
-      ::File.open(destination, 'w') do |f|
+      ::File.open(destination, 'wb') do |f|
         f.write(download(file))
       end
     end
