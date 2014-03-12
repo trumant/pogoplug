@@ -1,4 +1,4 @@
-require 'spec/spec_helper'
+require 'spec_helper'
 require 'pogoplug/client'
 
 describe PogoPlug::Client do
