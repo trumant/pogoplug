@@ -23,7 +23,7 @@ module PogoPlug
         offset: json['pageoffset'].to_i,
         total_count: json['totalcount'].to_i
       )
-      if json['files'] && json['files'] != ''
+      if json['files'].kind_of?(Array)
         json['files'].each do |f|
           listing.files << File.from_json(f)
         end
