@@ -12,6 +12,7 @@ module PogoPlug
         if logger
           f.request :curl, logger, :warn
         end
+        yield(f) if block_given?
         f.response :json, :content_type => /javascript|json/
         f.adapter Faraday.default_adapter
       end

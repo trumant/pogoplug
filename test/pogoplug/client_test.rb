@@ -61,6 +61,17 @@ module PogoPlug
         end
       end
 
+      context 'user data' do
+        setup do
+          @client.login(@username, @password)
+        end
+
+        should "list the user data" do
+          response = @client.user_data
+          assert_equal("1a3edf8b7a987226ec0840f37bf35cc5", response["user"]["userid"] )
+        end
+      end
+
     end
   end
 end
