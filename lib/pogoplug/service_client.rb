@@ -55,7 +55,7 @@ module PogoPlug
 
     def find_by_name(name, parent_id = nil)
       find_by_name!(name, parent_id)
-    rescue NotFoundError
+    rescue NotFoundError, NoSuchFilenameError
       nil
     end
 
@@ -108,7 +108,7 @@ module PogoPlug
     def find_by_id(id)
       begin
         find_by_id!(id)
-      rescue PogoPlug::NotFoundError => e
+      rescue PogoPlug::NotFoundError
         nil
       end
     end
