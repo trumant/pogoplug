@@ -20,7 +20,9 @@ describe PogoPlug::ServiceClient do
   end
 
   before do
-    client = PogoPlug::Client.new("https://service.pogoplug.com/")
+    client = PogoPlug::Client.new(
+      "https://service.pogoplug.com/"
+    )
     @username = "gem_test_user@mailinator.com"
     @password = "p@ssw0rd"
     @token = client.login(@username, @password)
@@ -32,9 +34,7 @@ describe PogoPlug::ServiceClient do
   end
 
   after do
-    unless @parent_removed
-      @client.delete(@parent.id)
-    end
+    @client.delete(@parent.id) unless @parent_removed
   end
 
   it "should create a directory" do
@@ -170,61 +170,65 @@ describe PogoPlug::ServiceClient do
     expect(@client.download(result)).to eq(CONTENT_2)
   end
 
-  it "should rename the file inside the same folder" do
-    name = "some file.txt"
-    other_name = "other file.txt"
+  context 'when moving files' do
+    it "should rename the file inside the same folder" do
+      name = "some file.txt"
+      other_name = "other file.txt"
 
-    result = ::File.open(PATH) do |f|
-      @client.create_file(name, @parent.id, f)
+      result = ::File.open(PATH) do |f|
+        @client.create_file(name, @parent.id, f)
+      end
+
+      @client.move(result.id, @parent.id, other_name)
+
+      moved = @client.find_by_name(other_name, @parent.id)
+
+      expect(moved.id).to eq(result.id)
+      expect(@client.find_by_name(name, @parent.id)).to be_nil
+      expect(@client.download(moved)).to eq(CONTENT)
     end
 
-    @client.move(result.id, @parent.id, other_name)
+    it "should rename the file across folders" do
+      name = "file.txt"
+      other_folder = 'other folder'
 
-    moved = @client.find_by_name(other_name, @parent.id)
+      result = ::File.open(PATH) do |f|
+        @client.create_file(name, @parent.id, f)
+      end
 
-    expect(moved.id).to eq(result.id)
-    expect(@client.find_by_name(name, @parent.id)).to be_nil
-    expect(@client.download(moved)).to eq(CONTENT)
+      destination = @client.create_directory(other_folder, @parent.id)
+
+      @client.move(result.id, destination.id, result.name)
+
+      moved = @client.search_by_name(result.name, destination.id).first
+
+      expect(moved.id).to eq(result.id)
+      expect(@client.find_by_name(name, @parent.id)).to be_nil
+      expect(@client.download(moved)).to eq(CONTENT)
+    end
   end
 
-  it "should rename the file across folders" do
-    name = "file.txt"
-    other_folder = 'other folder'
+  context 'when deleting files' do
+    it "should delete an item by it's name" do
+      name = "file.txt"
 
-    result = ::File.open(PATH) do |f|
-      @client.create_file(name, @parent.id, f)
+      result = ::File.open(PATH) do |f|
+        @client.create_file(name, @parent.id, f)
+      end
+
+      @client.delete_by_name(name, @parent.id)
+
+      expect(@client.find_by_id(result.id)).to be_nil
     end
 
-    destination = @client.create_directory(other_folder, @parent.id)
-
-    @client.move(result.id, destination.id, result.name)
-
-    moved = @client.find_by_name!(result.name, destination.id)
-
-    expect(moved.id).to eq(result.id)
-    expect(@client.find_by_name(name, @parent.id)).to be_nil
-    expect(@client.download(moved)).to eq(CONTENT)
-  end
-
-  it "should delete an item by it's name" do
-    name = "file.txt"
-
-    result = ::File.open(PATH) do |f|
-      @client.create_file(name, @parent.id, f)
+    it "should not do anything if trying to delete a file that does not exist" do
+      expect(@client.delete_by_name("file.txt", @parent.id)).to be_nil
     end
 
-    @client.delete_by_name(name, @parent.id)
-
-    expect(@client.find_by_id(result.id)).to be_nil
-  end
-
-  it "should not do anything if trying to delete a file that does not exist" do
-    expect(@client.delete_by_name("file.txt", @parent.id)).to be_nil
-  end
-
-  it 'should delete the created top folder' do
-    @parent_removed = true
-    expect(@client.delete_by_name(@parent.name)).to be_true
+    it 'should delete the created top folder' do
+      @parent_removed = true
+      expect(@client.delete_by_name(@parent.name)).to be_true
+    end
   end
 
   it "should download a binary file correctly" do

@@ -53,6 +53,14 @@ module PogoPlug
       end
     end
 
+    def search_by_name(name, parent_id = nil)
+      criteria = %Q!name = "#{name}"!
+      if parent_id
+        criteria << %Q! and parentid = "#{parent_id}"!
+      end
+      search(criteria)
+    end
+
     def find_by_name(name, parent_id = nil)
       find_by_name!(name, parent_id)
     rescue NotFoundError, NoSuchFilenameError
@@ -121,8 +129,8 @@ module PogoPlug
       get('/removeFile', options).success?
     end
 
-    def delete_by_name(file_id, parent_id = nil, recursive = true)
-      if file = find_by_name(file_id, parent_id)
+    def delete_by_name(name, parent_id = nil, recursive = true)
+      if file = find_by_name(name, parent_id)
         delete(file.id, recursive)
       end
     end
