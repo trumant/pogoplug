@@ -53,6 +53,14 @@ module PogoPlug
       end
     end
 
+    def create_directory_if_needed( name, parent_id, properties = {} )
+      create_entity_if_needed(name, parent_id, nil, properties)
+    end
+
+    def create_file_if_needed( name, parent_id, io, properties = {} )
+      create_entity_if_needed(name, parent_id, io, properties)
+    end
+
     def search_by_name(name, parent_id = nil)
       criteria = %Q!name = "#{name}"!
       if parent_id
