@@ -54,19 +54,18 @@ module PogoPlug
     end
 
     def find_by_name(name, parent_id = nil)
-      criteria = %Q!name = "#{name}"!
-      if parent_id
-        criteria << %Q! and parentid = "#{parent_id}"!
-      end
-      search(criteria).first
+      find_by_name!(name, parent_id)
+    rescue NotFoundError
+      nil
     end
 
     def find_by_name!(name, parent_id = nil)
-      if result = find_by_name(name, parent_id)
-        result
-      else
-        raise NotFoundError.new("Could not find file with name [#{name}] and parent [#{parent_id}]")
+      options = { deviceid: @device_id, serviceid: @service_id, filename: name }
+      if parent_id
+        options[:parentid] = parent_id
       end
+      result = get("/getFile", options).body
+      File.from_json(result["file"])
     end
 
     def move(file_id, parent_id, file_name)
@@ -115,14 +114,14 @@ module PogoPlug
     end
 
     def delete(file_id, recursive = true)
-      options = {deviceid: @device_id, serviceid: @service_id, fileid: file_id}
+      options = { deviceid: @device_id, serviceid: @service_id, fileid: file_id }
       if recursive
         options[:recurse] = '1'
       end
       get('/removeFile', options).success?
     end
 
-    def delete_by_name( file_id, parent_id = nil, recursive = true )
+    def delete_by_name(file_id, parent_id = nil, recursive = true)
       if file = find_by_name(file_id, parent_id)
         delete(file.id, recursive)
       end

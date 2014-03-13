@@ -238,4 +238,32 @@ describe PogoPlug::ServiceClient do
     expect(::File.stat(destination.path).size).to eq(::File.stat(PDF_PATH).size)
   end
 
+  context 'finding file by name' do
+
+    it "should be able to find the file by it's name" do
+      name = 'some-directory'
+      result = @client.create_directory( name, @parent.id )
+
+      found = @client.find_by_name(name, @parent.id)
+      expect(found.id).to eq(result.id)
+
+      found = @client.find_by_name!(name, @parent.id)
+      expect(found.id).to eq(result.id)
+
+      found = @client.find_by_name!([@parent.name, name].join("/"))
+      expect(found.id).to eq(result.id)
+    end
+
+    it "should return nil if it can't find the file specified" do
+      expect(@client.find_by_name("some-file", @parent.id)).to be_nil
+    end
+
+    it "should return the file found" do
+      expect do
+        @client.find_by_name!("some-file", @parent.id)
+      end.to raise_error(PogoPlug::NotFoundError)
+    end
+
+  end
+
 end

@@ -20,17 +20,11 @@ module PogoPlug
 
     def self.raise_errors(response)
       error_code = response.body['HB-EXCEPTION']['ecode'] if response.body['HB-EXCEPTION']
-      case error_code
-        when 606
-          raise AuthenticationError
-        when 808
-          raise DuplicateNameError
-        when 804
-          raise NotFoundError
-        else
-          unless response.success?
-            raise ServiceError.new(response)
-          end
+
+      if exception = PogoPlug::ERRORS[error_code]
+        raise exception.new(response)
+      elsif !response.success?
+        raise ServerError.new(response)
       end
     end
 
