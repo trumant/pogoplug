@@ -5,7 +5,7 @@ module PogoPlug
   class Service
     include HashInitializer
 
-    attr_accessor :name, :id, :api_url, :online, :service_type, :raw, :token, :device_id, :logger
+    attr_accessor :name, :id, :api_url, :online, :service_type, :raw, :token, :device_id, :logger, :features
 
     def online?
       self.online
@@ -23,6 +23,7 @@ module PogoPlug
         online: json['online'] == '1',
         service_type: json['type'],
         device_id: json['deviceid'],
+        features: json['features'] || [],
         raw: json,
         token: token,
         logger: logger
