@@ -46,6 +46,7 @@ module PogoPlug
         parent_id: json['parentid'],
         size: json['size'].to_i,
         origin: json['origin'],
+        properties: json['properties'] || {},
         raw: json
       )
     end
