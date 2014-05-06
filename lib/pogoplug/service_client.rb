@@ -107,7 +107,7 @@ module PogoPlug
     end
 
     def update_entity_metadata( id, metadata )
-      params = metadata.merge(fileid: id)
+      params = metadata.merge(fileid: id,  deviceid: @device_id, serviceid: @service_id)
       if params[:properties]
         params[:properties] = params[:properties].to_json
       end
