@@ -26,6 +26,10 @@ module PogoPlug
       params = { deviceid: @device_id, serviceid: @service_id, filename: file.name, type: file.type }.merge(properties)
       params[:parentid] = file.parent_id unless file.parent_id.nil?
 
+      if params[:properties]
+        params[:properties] = params[:properties].to_json
+      end
+
       file_handle = unless file.id
         response = get('/createFile', params)
         File.from_json(response.body['file'])
@@ -100,6 +104,15 @@ module PogoPlug
 
     def create_file(file_name, parent_id, io, properties = {})
       create_entity(File.create_file(file_name, parent_id), io, properties)
+    end
+
+    def update_entity_metadata( id, metadata )
+      params = metadata.merge(fileid: id)
+      if params[:properties]
+        params[:properties] = params[:properties].to_json
+      end
+      response = get('/updateFile', params)
+      File.from_json(response.body['file'])
     end
 
     def download(file)
