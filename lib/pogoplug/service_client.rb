@@ -111,8 +111,7 @@ module PogoPlug
       if params[:properties]
         params[:properties] = params[:properties].to_json
       end
-      response = get('/updateFile', params)
-      File.from_json(response.body['file'])
+      get('/updateFile', params)
     end
 
     def download(file)
