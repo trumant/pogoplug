@@ -12,6 +12,7 @@ module PogoPlug
         if logger
           f.request :curl, logger, :warn
         end
+        f.request :retry, max: 2, interval: 0.05, interval_randomness: 0.5, backoff_factor: 2
         yield(f) if block_given?
         f.response :json, :content_type => /javascript|json/
         f.adapter Faraday.default_adapter
@@ -28,11 +29,16 @@ module PogoPlug
       end
     end
 
-    def self.send_file( files_url, token, device_id, service_id, file_handle, io)
+    def self.send_file(files_url, token, device_id, service_id, file_handle, io, logger = nil)
       uri = URI.parse("#{files_url}/#{token}/#{device_id}/#{service_id}/#{file_handle.id}")
       req = Net::HTTP::Put.new(uri.path)
       req['Content-Length'] = io.size
       req['Content-Type'] = file_handle.mimetype
+
+      if logger
+        logger.info("Uploading #{file_handle.inspect} to #{uri}")
+      end
+
       req.body_stream = io
       Net::HTTP.new(uri.host, uri.port).request(req)
     end

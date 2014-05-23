@@ -38,7 +38,7 @@ module PogoPlug
       end
 
       if io
-        HttpHelper.send_file(files_url, @token, @device_id, @service_id, file_handle, io)
+        HttpHelper.send_file(files_url, @token, @device_id, @service_id, file_handle, io, @logger)
         file_handle.size = io.size
       end
 
