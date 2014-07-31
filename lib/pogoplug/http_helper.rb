@@ -59,7 +59,7 @@ module PogoPlug
         logger.info(message) if logger
       end
 
-      logger_block.call("Uploading #{file_handle.inspect} to #{uri}")
+      logger_block.call("Uploading #{file_handle.inspect} to #{uri} - #{io.size} bytes")
 
       req.body_stream = io
       client = Net::HTTP.new(uri.host, uri.port)
@@ -68,7 +68,7 @@ module PogoPlug
 
       case response
         when Net::HTTPSuccess
-          logger_block.call("Successfully processed request - #{response.body}")
+          logger_block.call("Successfully uploaded file #{response.inspect} - #{response.body}")
         else
           logger_block.call("Failed to process request - #{response.inspect}")
           raise HttpError.new(response)
