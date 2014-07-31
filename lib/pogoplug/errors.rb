@@ -9,6 +9,7 @@ module PogoPlug
   end
 
   ClientError = Class.new(ServiceError)
+  ClientTimeoutError = Class.new(ServiceError)
   ServerError = Class.new(ServiceError)
   InvalidArgumentError = Class.new(ServiceError)
   OutOfRangeError = Class.new(ServiceError)
@@ -50,6 +51,7 @@ module PogoPlug
     601 => OutOfRangeError,
     602 => NotImplementedError,
     606 => AuthenticationError,
+    607 => ClientTimeoutError,
     608 => TemporaryFailureError,
     800 => NoSuchUserError,
     801 => NoSuchDeviceError,
@@ -73,7 +75,7 @@ module PogoPlug
     825 => LimitReachedError,
     826 => InvalidTokenError,
     831 => TrialNotAllowedError,
-    832 => CopyrightDeniedError
+    832 => CopyrightDeniedError,
   }
 
 end
