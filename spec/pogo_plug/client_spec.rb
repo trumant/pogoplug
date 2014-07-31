@@ -4,7 +4,7 @@ require 'pogoplug/client'
 describe PogoPlug::Client do
 
   before do
-    @client = PogoPlug::Client.new("https://service.pogoplug.com/")
+    @client = PogoPlug::Client.new("https://service.pogoplug.com/", Logger.new(STDOUT))
     @username = "gem_test_user@mailinator.com"
     @password = "p@ssw0rd"
   end

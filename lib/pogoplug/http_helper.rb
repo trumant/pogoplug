@@ -6,6 +6,26 @@ require 'pogoplug/errors'
 module PogoPlug
   module HttpHelper
 
+    class HttpError < StandardError
+
+      attr_reader :original
+
+      def initialize(original)
+        @original = original
+        super(to_message)
+      end
+
+      def to_message
+        case @original
+          when Net::HTTPClientError, Net::HTTPServerError
+            "#{@original.inspect} - #{@original.body} - #{@original.to_hash.inspect}"
+          else
+            @original.inspect
+        end
+      end
+
+    end
+
     def self.create(domain, logger = nil)
       Faraday.new(:url => domain) do |f|
         f.request :url_encoded
@@ -35,12 +55,26 @@ module PogoPlug
       req['Content-Length'] = io.size
       req['Content-Type'] = file_handle.mimetype
 
-      if logger
-        logger.info("Uploading #{file_handle.inspect} to #{uri}")
+      logger_block = lambda do |message|
+        logger.info(message) if logger
       end
 
+      logger_block.call("Uploading #{file_handle.inspect} to #{uri}")
+
       req.body_stream = io
-      Net::HTTP.new(uri.host, uri.port).request(req)
+      client = Net::HTTP.new(uri.host, uri.port)
+      client.use_ssl = true if uri.scheme == "https"
+      response = client.request(req)
+
+      case response
+        when Net::HTTPSuccess
+          logger_block.call("Successfully processed request - #{response.body}")
+        else
+          logger_block.call("Failed to process request - #{response.inspect}")
+          raise HttpError.new(response)
+      end
+
+      response
     end
 
   end
